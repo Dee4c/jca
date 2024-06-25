@@ -338,6 +338,10 @@
             color: #11101D;
         }
 
+        h2 {
+            color: white;
+        }
+        
     </style>
 </head>
 <body>
@@ -361,18 +365,10 @@
             <span class="tooltip">Candidate Management</span>
         </li>
         <li>
-            <a href="#">
+            <a href="{{route('usermanage.preliminary_dash')}}">
                 <i class='bx bx-edit'></i>
                 <span class="links_name">Preliminaries</span>
-                <i class='bx bxs-chevron-down' id="btn"></i>
             </a>
-            <span class="tooltip">Preliminaries</span>
-            <ul class="dropdown">
-                <li><a href="{{route('usermanage.preliminary_dash')}}">Pre-Interview</a></li>
-                <li><a href="{{route('usermanage.prelim_swimsuit_dash')}}">Swim-Suit</a></li>
-                <li><a href="{{route('usermanage.prelim_gown_dash')}}">Gown</a></li>
-                <li><a href="{{route('usermanage.prelim_overall_ranks_dash')}}">Overall Rankings</a></li>
-            </ul>
         </li>        
         <li>
             <a href="{{route('usermanage.semi_final_dash')}}">
@@ -401,134 +397,147 @@
         </li>
     </ul>
 </div>
+
 <div class="content">
     <div class="container">
-        <!-- Title -->
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @elseif (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
         <h1 class="title-id">Preliminary Table</h1>
         <br>
-        <!-- Table to display candidate ranks -->
-        <h2 class="title-id">Pre-Interview</h2>
-        <br>
-        <div class="tbl-content">
+
+        <!-- Form for submitting semi-finalists -->
+        <form method="POST" action="{{ route('insertSemiFinalists') }}">
+            @csrf
+            <input type="hidden" name="topCandidates" id="topCandidates">
+
+            <!-- Table to display pre-interview data -->
             <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Candidate Number</th>
-                        @foreach($judges as $judge)
-                        <th>{{ $judge->name }}</th>
-                        @endforeach
-                        <th>Total Score</th>
+                        <th>Pre-Interview Rank</th>
+                        <th>Swim-Suit Rank</th>
+                        <th>Gown Rank</th>
+                        <th>Total</th>
                         <th>Overall Rank</th>
+                        <th>Select for Semi-Finals</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($candidates as $candidate)
                     <tr>
-                        <td>{{ $candidate->id }}</td>
-                        <!-- Display ranks given by each judge for this candidate -->
-                        @foreach($judges as $judge)
+                        <td>{{ $candidate->candidateNumber }}</td>
+                        <td>{{ $candidate->preInterviewRank }}</td>
+                        <td>{{ $candidate->swimSuitRank }}</td>
+                        <td>{{ $candidate->gownRank }}</td>
+                        <td>{{ $candidate->total }}</td>
+                        <td>{{ $candidate->overallRank }}</td>
                         <td>
-                            @if(isset($scores[$candidate->id][$judge->name]))
-                                {{ $scores[$candidate->id][$judge->name] }}
-                            @else
-                                N/A <!-- If no rank is available for this judge and candidate -->
-                            @endif
-                        </td>
-                        @endforeach
-                        <!-- Add code to display the total score and overall rank -->
-                        <td data-total="">
-                            @if(isset($totalScores[$candidate->id]))
-                                {{ $totalScores[$candidate->id] }}
-                            @else
-                                N/A <!-- If total score is not available -->
-                            @endif
-                        </td>
-                        <td data-rank="">
-                            @if(isset($overallRanks[$candidate->id]))
-                                {{ $overallRanks[$candidate->id] }}
-                            @else
-                                N/A <!-- If overall rank is not available -->
-                            @endif
+                            <input type="hidden" name="candidate_name[]" value="{{ $candidate->candidateName }}">
+                            <input type="hidden" name="overallRank[]" value="{{ $candidate->overallRank }}">
+                            <input type="checkbox" name="candidate[]" value="{{ $candidate->id }}" {{ $isSubmitted ? 'disabled' : '' }}>
                         </td>
                     </tr>
                     @endforeach
-                </tbody>                
+                </tbody>
             </table>
-        </div>
-        <!-- Submit button -->
-        <form method="POST" action="{{route('usermanage.preliminary_overall_ranks.store') }}">
-            @csrf
-        <!-- Hidden input fields for candidate number and overall rank -->
-            @foreach($candidates as $candidate)
-            <input type="hidden" name="candidate_number[]" value="{{ $candidate->id }}">
-            <input type="hidden" name="overall_rank[{{ $candidate->id }}]" value="{{ $overallRanks[$candidate->id] ?? '' }}">
-            @endforeach
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>        
+
+            <!-- Submit button -->
+            <button type="submit" class="btn btn-primary" {{ $isSubmitted ? 'disabled' : '' }}>Submit Semi-Finalists</button>
+        </form>
+
+        <br>
+        <h2>Pre-Interview Scores</h2>
+        <!-- Table to display pre-interview scores -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Candidate Number</th>
+                    <th>Judge's Name</th>
+                    <th>Pre-Interview Rank</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($preInterviewScores as $score)
+                <tr>
+                    <td>{{ $score->candidateNumber }}</td>
+                    <td>{{ $score->judge_name }}</td>
+                    <td>{{ $score->rank }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <br>
+        <h2>Swim-Suit Scores</h2>
+        <!-- Table to display swim-suit scores -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Candidate Number</th>
+                    <th>Judge's Name</th>
+                    <th>Swim-Suit Rank</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($swimSuitScores as $score)
+                <tr>
+                    <td>{{ $score->candidateNumber }}</td>
+                    <td>{{ $score->judge_name }}</td>
+                    <td>{{ $score->rank }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <br>
+        <h2>Gown Scores</h2>
+        <!-- Table to display gown scores -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Candidate Number</th>
+                    <th>Judge's Name</th>
+                    <th>Gown Rank</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($gownScores as $score)
+                <tr>
+                    <td>{{ $score->candidateNumber }}</td>
+                    <td>{{ $score->judge_name }}</td>
+                    <td>{{ $score->rank }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 </div>
 
+<!-- JavaScript to handle selected candidates -->
 <script>
-    // Function to calculate the total score and rank for each candidate
-function calculateTotalScore() {
-    // Loop through each candidate row
-    document.querySelectorAll('.content table tbody tr').forEach(function(candidateRow) {
-        // Initialize variables for calculating total score and overall rank
-        var totalScore = 0;
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const topCandidates = [];
 
-        // Loop through each judge's score for the candidate (exclude the first cell which contains the candidate number)
-        candidateRow.querySelectorAll('td:not(:first-child)').forEach(function(scoreCell) {
-            // Get the score for the judge and add it to the total score
-            var score = parseFloat(scoreCell.textContent);
-            if (!isNaN(score)) {
-                totalScore += score;
-            }
+        checkboxes.forEach((checkbox, index) => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    topCandidates.push(this.value);
+                } else {
+                    const indexToRemove = topCandidates.indexOf(this.value);
+                    if (indexToRemove !== -1) {
+                        topCandidates.splice(indexToRemove, 1);
+                    }
+                }
+                document.getElementById('topCandidates').value = JSON.stringify(topCandidates);
+            });
         });
-
-        // Update the total score for the candidate
-        candidateRow.querySelector('td[data-total]').textContent = totalScore;
     });
-
-    // Sort the rows based on total score
-    var rows = Array.from(document.querySelectorAll('.content table tbody tr'));
-    rows.sort(function(a, b) {
-        var scoreA = parseFloat(a.querySelector('td[data-total]').textContent);
-        var scoreB = parseFloat(b.querySelector('td[data-total]').textContent);
-        return scoreA - scoreB; // Sort in ascending order (lowest score first)
-    });
-
-    // Update the rank for each candidate
-    var rank = 1;
-    var prevScore = null;
-    rows.forEach(function(row, index) {
-        var score = parseFloat(row.querySelector('td[data-total]').textContent);
-        if (prevScore !== null && score !== prevScore) {
-            rank = index + 1;
-        }
-        row.querySelector('td[data-rank]').textContent = rank;
-        prevScore = score;
-
-        // Update the hidden input field with the calculated overall rank
-        var candidateNumber = row.querySelector('td:first-child').textContent;
-        document.querySelector('input[name="overall_rank[' + candidateNumber + ']"]').value = rank;
-    });
-}
-
-// Initial calculation on page load
-calculateTotalScore();
-
-// Dropdown menu handling
-document.querySelector('.sidebar li:nth-child(3) a').addEventListener('click', function() {
-    var dropdown = document.querySelector('.sidebar li:nth-child(3) .dropdown');
-    if (dropdown.style.display === 'block') {
-        dropdown.style.display = 'none';
-    } else {
-        dropdown.style.display = 'block';
-    }
-});
-
 </script>
-
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

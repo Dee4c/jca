@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Semi Final Table</title>
+    <title>Semi-Finals Table</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
     <style>
@@ -338,17 +338,10 @@
             color: #11101D;
         }
 
-      /* CSS for hiding the sidebar in printing mode and centering the table */
-        @media print {
-        .sidebar {
-            display: none;
+        h2 {
+            color:white;
         }
 
-        .print-button {
-            display: none;
-        }
-     }
-    
     </style>
 </head>
 <body>
@@ -372,21 +365,13 @@
             <span class="tooltip">Candidate Management</span>
         </li>
         <li>
-            <a href="#">
+            <a href="{{route('usermanage.preliminary_dash')}}">
                 <i class='bx bx-edit'></i>
                 <span class="links_name">Preliminaries</span>
-                <i class='bx bxs-chevron-down' id="btn"></i>
             </a>
-            <span class="tooltip">Preliminaries</span>
-            <ul class="dropdown">
-                <li><a href="{{route('usermanage.preliminary_dash')}}">Pre-Interview</a></li>
-                <li><a href="{{route('usermanage.prelim_swimsuit_dash')}}">Swim-Suit</a></li>
-                <li><a href="{{route('usermanage.prelim_gown_dash')}}">Gown</a></li>
-                <li><a href="{{route('usermanage.prelim_gown_dash')}}">Overall Rankings</a></li>
-            </ul>
         </li>        
         <li>
-            <a href="#">
+            <a href="{{route('usermanage.semi_final_dash')}}">
                 <i class='bx bx-line-chart'></i>
                 <span class="links_name">Semi-Finals</span>
             </a>
@@ -412,24 +397,88 @@
         </li>
     </ul>
 </div>
+
 <div class="content">
     <div class="container">
-    
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @elseif (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        <h1 class="title-id">Semi-Finals Table</h1>
+        <br>
+
+        <!-- Form for submitting finalists -->
+        <form id="finalistsForm" method="POST" action="{{ route('insertFinalists') }}">
+            @csrf
+
+            <!-- Table to display finalists -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Candidate Number</th>
+                        <th>Total Rank</th>
+                        <th>Overall Ranking</th>
+                        <th>Select for Finals</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($topCandidates as $index => $candidate)
+                    <tr>
+                        <td>{{ $candidate->candidate_number }}</td>
+                        <td>{{ $candidate->total_rank }}</td>
+                        <td>{{ $index + 1 }}</td> <!-- Automatically display the rank based on order -->
+                        <td>
+                            <input type="checkbox" name="candidate[]" value="{{ $candidate->candidate_number }}">
+                            <input type="hidden" name="overallRank[]" value="{{ $index + 1 }}">
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            <!-- Submit button -->
+            <button type="submit" class="btn btn-primary" id="submitBtn">Submit Finalists</button>
+        </form>
     </div>
 </div>
 
+<!-- JavaScript to handle selected candidates -->
 <script>
-    // Toggle sidebar dropdown
-    document.querySelector('.sidebar li:nth-child(3) a').addEventListener('click', function() {
-        var dropdown = document.querySelector('.sidebar li:nth-child(3) .dropdown');
-        if (dropdown.style.display === 'block') {
-            dropdown.style.display = 'none';
-        } else {
-            dropdown.style.display = 'block';
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const submitBtn = document.getElementById('submitBtn');
+
+        checkboxes.forEach((checkbox, index) => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    checkbox.parentNode.querySelector('input[type="hidden"]').value = index + 1;
+                } else {
+                    checkbox.parentNode.querySelector('input[type="hidden"]').value = '';
+                }
+                // Enable submit button if at least one checkbox is checked
+                submitBtn.disabled = document.querySelectorAll('input[type="checkbox"]:checked').length === 0;
+            });
+        });
+
+        // Initially disable submit button
+        submitBtn.disabled = true;
+
+        // Optional: Automatically submit form when all checkboxes are checked
+        /*
+        const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+        allCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (document.querySelectorAll('input[type="checkbox"]:checked').length === allCheckboxes.length) {
+                    document.getElementById('finalistsForm').submit();
+                }
+            });
+        });
+        */
     });
 </script>
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-</html>
+</html> 

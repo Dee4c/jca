@@ -417,7 +417,7 @@
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th></th>
+            <th>Candidate Image</th>
             <th>Candidate Number</th>
             <th>Name</th>
             <th>Age</th>

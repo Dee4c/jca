@@ -222,7 +222,26 @@
         .container #flip:checked ~ .forms .login-form{
             display: none;
         }
+
         }
+
+        .button .btn-judge {
+          display: block;
+          text-align: center;
+          padding: 15px 0;
+          background: #0d062a;
+          border-radius: 6px;
+          color: #c5b358;
+          cursor: pointer;
+          transition: all 0.4s ease;
+          text-decoration: none;
+          margin:auto;
+      }
+      
+      .button .btn-judge:hover {
+          background: #f0ffff;
+      }
+
     </style>
    </head>
 <body>
@@ -236,56 +255,32 @@
       </div>
     </div>
     <div class="forms">
-        <div class="form-content">
-          <div class="login-form">
-            <div class="title">Log in</div>
-            <form action="{{route('login-user')}}" method="post">
-                @if(Session::has('success'))
-                <div class="alert alert-success">{{ Session::get('success') }}</div>
-                @endif
-                @if(Session::has('fail'))
-                <div class="alert alert-danger">{{ Session::get('fail') }}</div>
-                @endif
-                @csrf
+      <div class="form-content">
+        <div class="login-form">
+          <div class="title">Log in</div>
+          <form action="{{ route('login-user') }}" method="post">
+            @csrf
+            @if(Session::has('success'))
+            <div class="alert alert-success">{{ Session::get('success') }}</div>
+            @endif
+            @if(Session::has('fail'))
+            <div class="alert alert-danger">{{ Session::get('fail') }}</div>
+            @endif
             <div class="input-boxes">
               <div class="input-box">
-                <i class="fas fa-envelope"></i>
-                <input type="text" class="form-control" placeholder="Enter Username" name="username" value="{{old('username')}}">
-                <span class="text-danger">@error('username') {{$message}} @enderror</span>
-              </div>
-              <div class="input-box">
-                <i class="fas fa-lock"></i>
-                    <input type="password" class="form-control" placeholder="Enter Password" name="password" value="{{old('username')}}">
-                    <span class="text-danger">@error('password') {{$message}} @enderror</span>
+                <i class="fas fa-key"></i>
+                <input type="text" class="form-control" placeholder="Enter Unique Code" name="unique_code" value="{{ old('unique_code') }}">
+                <span class="text-danger">@error('unique_code') {{ $message }} @enderror</span>
               </div>
               <div class="button input-box">
                 <input type="submit" value="Submit">
               </div>
             </div>
-        </form>
+          </form>
+        </div>
       </div>
-      </form>
-    </div>
-    </div>
     </div>
   </div>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        var inputUsername = document.querySelector('input[name="username"]');
-        var inputPassword = document.querySelector('input[name="password"]');
-        
-        // Function to check if Caps Lock is on
-        function checkCapsLock(event) {
-          var isCapsLockOn = event.getModifierState && event.getModifierState('CapsLock');
-          if (isCapsLockOn) {
-            alert("Warning: Caps Lock is on. Double-check your typing.");
-          }
-        }
-        
-        // Attach event listener to username and password inputs
-        inputUsername.addEventListener('keyup', checkCapsLock);
-        inputPassword.addEventListener('keyup', checkCapsLock);
-      });
-    </script>
+</div>
 </body>
 </html>

@@ -5,81 +5,54 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Session;
 use App\Models\Candidate;
 use App\Models\SwimSuitScore;
 use App\Models\PreInterviewScore;
 use App\Models\GownScore;
-use App\Models\PreInterviewOR;
-use App\Models\SwimSuitOR;
-use App\Models\GownOR;
-
-
-
+use App\Models\TopCandidates;
+use App\Models\SemiFinalScore;
+use App\Models\FinalScore;
+use App\Models\FinalistCandidates;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 
 class UserManagementController extends Controller
 {
     public function addJudgeForm()
     {
-        return view('usermanage.add_judge');
+        $uniqueCode = $this->generateUniqueCode(); // Replace with your actual logic to generate unique code
+        return view('usermanage.add_judge', compact('uniqueCode'));
+    }
+
+    private function generateUniqueCode($length = 12)
+    {
+        return Str::random($length);
     }
 
     public function addJudge(Request $request)
-    { 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'username' => 'required|unique:users',
-            'password' => 'required',
-        ]);
+    {
+    $validator = Validator::make($request->all(), [
+        'name' => 'required',
+        'role' => 'required|in:judge_prelim,judge_gown,judge_semi,judge_final', // Corrected spacing
+    ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $user = new User();
-        $user->name = $request->name;
-        $user->username = $request->username;
-        $user->password = $request->password;
-        $user->role = 'judge';
-        $user->save();
-
-        Session::flash('success', 'Judge added successfully');
-
-        return redirect()->route('usermanage.dashboard')->with('success', 'Judge added successfully');
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
     }
 
-    public function deleteUser($id)
-    {
-        $user = User::find($id);
+    // Generate unique code
+    $uniqueCode = $this->generateUniqueCode(); // Generate random unique code
 
-        if (!$user) {
-            return redirect()->back()->with('error', 'User not found');
-        }
+    // Create new user instance
+    $user = new User;
+    $user->name = $request->name;
+    $user->role = $request->role;
+    $user->unique_code = $uniqueCode; // Assign generated unique code
+    $user->save();
 
-        $user->delete();
-
-        return redirect()->back()->with('success', 'User deleted successfully');
-    }
-
-    public function updateUser(Request $request, $id)
-    {
-        $request->validate([
-            'edit_name' => 'required',
-            'edit_username' => 'required',
-            'edit_password' => 'required',
-        ]);
-
-        $user = User::find($id);
-        if (!$user) {
-            return redirect()->back()->with('error', 'User not found');
-        }
-
-        $user->name = $request->edit_name;
-        $user->username = $request->edit_username;
-        $user->password = $request->edit_password;
-        $user->save();
-
-        return redirect()->back()->with('success', 'User updated successfully');
+    // Redirect with success message and pass $uniqueCode to the view
+    return redirect()->route('usermanage.dashboard')->with('success', 'Judge added successfully!')->with('uniqueCode', $uniqueCode);
     }
 
     public function createCandidate()
@@ -199,54 +172,91 @@ class UserManagementController extends Controller
 
     public function preliminaryDash()
     {
-        // Fetch all candidates
-        $candidates = Candidate::all();
-    
-        // Fetch judges
-        $judges = User::where('role', 'judge')->get();
-    
-        // Initialize an empty array to hold scores
-        $scores = [];
-    
-        // Loop through each candidate
-        foreach ($candidates as $candidate) {
-            // Initialize an empty array to hold scores for this candidate
-            $candidateData = [];
-    
-            // Loop through each judge
-            foreach ($judges as $judge) {
-                // Find the score given by this judge to the current candidate
-                $judgeScore = PreInterviewScore::where('candidate_number', $candidate->id)
-                                                ->where('judge_name', $judge->name)
-                                                ->first();
-    
-                // If the score exists, add it to the candidate data, otherwise, add null
-                $candidateData[$judge->name] = $judgeScore ? $judgeScore->rank : null;
+        try {
+            // Fetch all candidates
+            $candidates = Candidate::all();
+
+            // Loop through candidates to fetch scores and calculate total
+            foreach ($candidates as $candidate) {
+                // Fetch and sum Pre-Interview Rank
+                $preInterviewScores = PreInterviewScore::where('candidate_number', $candidate->candidateNumber)->get();
+                $candidate->preInterviewRank = $preInterviewScores->sum('rank') ?: '-';
+
+                // Fetch and sum Swim-Suit Rank
+                $swimSuitScores = SwimSuitScore::where('candidate_number', $candidate->candidateNumber)->get();
+                $candidate->swimSuitRank = $swimSuitScores->sum('rank') ?: '-';
+
+                // Fetch and sum Gown Rank
+                $gownScores = GownScore::where('candidate_number', $candidate->candidateNumber)->get();
+                $candidate->gownRank = $gownScores->sum('rank') ?: '-';
+
+                // Calculate Total
+                $candidate->total = ($preInterviewScores->sum('rank') ?: 0)
+                                    + ($swimSuitScores->sum('rank') ?: 0)
+                                    + ($gownScores->sum('rank') ?: 0);
             }
-    
-            // Add the candidate's data to the scores array
-            $scores[$candidate->id] = $candidateData;
+
+            // Assign overall rank based on total score
+            $rank = 1;
+            foreach ($candidates->sortBy('total') as $candidate) {
+                $candidate->overallRank = $rank++;
+            }
+
+            // Fetch detailed scores with judges' names
+            $preInterviewScores = DB::table('pre_interview_scores')
+                ->join('candidates', 'pre_interview_scores.candidate_number', '=', 'candidates.candidateNumber')
+                ->select('candidates.candidateNumber', 'candidates.candidateName', 'pre_interview_scores.judge_name', 'pre_interview_scores.rank')
+                ->get();
+
+            $swimSuitScores = DB::table('swim_suit_scores')
+                ->join('candidates', 'swim_suit_scores.candidate_number', '=', 'candidates.candidateNumber')
+                ->select('candidates.candidateNumber', 'candidates.candidateName', 'swim_suit_scores.judge_name', 'swim_suit_scores.rank')
+                ->get();
+
+            $gownScores = DB::table('gown_scores')
+                ->join('candidates', 'gown_scores.candidate_number', '=', 'candidates.candidateNumber')
+                ->select('candidates.candidateNumber', 'candidates.candidateName', 'gown_scores.judge_name', 'gown_scores.rank')
+                ->get();
+
+            // Check if the top 8 candidates have already been inserted
+            $isSubmitted = TopCandidates::count() >= 8;
+
+            // Pass data to the view
+            return view('usermanage.preliminary_dash', compact('candidates', 'preInterviewScores', 'swimSuitScores', 'gownScores', 'isSubmitted'));
+        } catch (\Exception $e) {
+            return back()->withError('Error fetching data: ' . $e->getMessage());
         }
-    
-        // Pass candidate data, judges data, and scores data to the view
-        return view('usermanage.preliminary_dash', compact('candidates', 'judges', 'scores'));
     }
 
     public function judgeDashboard()
     {
         // Fetch all candidates
         $candidates = Candidate::all();
-        
-        // Pass candidate data to the view
-        return view('judge.judge_dashboard', ['candidates' => $candidates]);
+    
+        // Fetch submitted scores for the current judge
+        $judgeName = Session::get('userName');
+        $submittedScores = PreInterviewScore::where('judge_name', $judgeName)
+            ->get()
+            ->keyBy('candidate_number')
+            ->toArray();
+    
+        // Pass candidates and submitted scores to the view
+        return view('judge.judge_dashboard', compact('candidates', 'submittedScores')); 
     }
-
+    
         public function semifinalsDashboard()
     {
-        $candidates = Candidate::all();
+        $candidates = TopCandidates::orderBy('candidate_number')->limit(8)->get();
+
+         // Fetch submitted scores for the current judge
+         $judgeName = Session::get('userName');
+         $submittedScores = SemiFinalScore::where('judge_name', $judgeName)
+             ->get()
+             ->keyBy('candidate_number')
+             ->toArray();
         
         // Pass candidate data to the view
-        return view('judge.semi_finals_dash', ['candidates' => $candidates]);
+        return view('judge.semi_finals_dash', compact ('candidates','submittedScores'));
     }
 
     public function storePreInterviewScore(Request $request)
@@ -255,8 +265,14 @@ class UserManagementController extends Controller
         $validatedData = $request->validate([
             'candidate_number' => 'required|array',
             'candidate_number.*' => 'required|integer',
+            'composure' => 'required|array',
+            'composure.*' => 'required|integer|min:75|max:100',
+            'poise_grace_projection' => 'required|array',
+            'poise_grace_projection.*' => 'required|integer|min:75|max:100',
             'judge_name' => 'required|array',
             'judge_name.*' => 'required|string|max:255',
+            'rank' => 'required|array',
+            'rank.*' => 'required|integer',
         ]);
     
         // Array to hold total scores for each candidate
@@ -264,10 +280,39 @@ class UserManagementController extends Controller
     
         // Loop through the submitted data and calculate total scores
         foreach ($validatedData['candidate_number'] as $index => $candidateNumber) {
-            $composure = $request->input('composure.' . $candidateNumber, 0);
-            $poiseGraceProjection = $request->input('poise_grace_projection.' . $candidateNumber, 0);
-            // Calculate the total score by averaging the two scores and dividing by 2
-            $totalScores[$candidateNumber] = ($composure + $poiseGraceProjection) / 2;
+            $composure = $validatedData['composure'][$index];
+            $poiseGraceProjection = $validatedData['poise_grace_projection'][$index];
+    
+            // Calculate the total score by averaging the two scores
+            $totalScore = ($composure + $poiseGraceProjection) / 2;
+    
+            // Check if scores already exist for this candidate and judge
+            $existingScore = PreInterviewScore::where('candidate_number', $candidateNumber)
+                ->where('judge_name', $validatedData['judge_name'][$index])
+                ->first();
+    
+            if ($existingScore) {
+                // Update the existing score
+                $existingScore->update([
+                    'composure' => $composure,
+                    'poise_grace_projection' => $poiseGraceProjection,
+                    'total' => $totalScore,
+                    'rank' => $validatedData['rank'][$index],
+                ]);
+            } else {
+                // Store the new pre-interview score in the database
+                PreInterviewScore::create([
+                    'candidate_number' => $candidateNumber,
+                    'composure' => $composure,
+                    'poise_grace_projection' => $poiseGraceProjection,
+                    'total' => $totalScore,
+                    'rank' => $validatedData['rank'][$index],
+                    'judge_name' => $validatedData['judge_name'][$index],
+                ]);
+            }
+    
+            // Store the total score for ranking purposes
+            $totalScores[$candidateNumber] = $totalScore;
         }
     
         // Sort the total scores in descending order
@@ -280,46 +325,77 @@ class UserManagementController extends Controller
             if ($totalScore !== $prevScore) {
                 $rank++;
             }
-            // Store the pre-interview score in the database
-            PreInterviewScore::create([
-                'candidate_number' => $candidateNumber,
-                'composure' => $request->input('composure.' . $candidateNumber, 0),
-                'poise_grace_projection' => $request->input('poise_grace_projection.' . $candidateNumber, 0),
-                'total' => $totalScore,
-                'rank' => $rank,
-                'judge_name' => $validatedData['judge_name'][$index], // Using $index directly
-            ]);
+    
+            // Update the rank in the database for each candidate
+            PreInterviewScore::where('candidate_number', $candidateNumber)
+                ->update(['rank' => $rank]);
+    
             $prevScore = $totalScore;
         }
     
-        // Redirect to the swim-suit-table page
-        return redirect()->route('swim-suit-table')->with('success', 'Pre-interview scores submitted successfully!');
+        // Redirect back to the judge dashboard page
+        return redirect()->back()->with('success', 'Pre-Interview scores submitted successfully!');
     }
-    
-        public function storeSwimSuitScore(Request $request)
+        
+    public function storeSwimSuitScore(Request $request)
     {
         // Validate the incoming request data
         $validatedData = $request->validate([
             'candidate_number' => 'required|array',
             'candidate_number.*' => 'required|integer',
+            'composure' => 'required|array',
+            'composure.*' => 'required|integer|min:75|max:100',
+            'poise_grace_projection' => 'required|array',
+            'poise_grace_projection.*' => 'required|integer|min:75|max:100',
             'judge_name' => 'required|array',
             'judge_name.*' => 'required|string|max:255',
+            'rank' => 'required|array',
+            'rank.*' => 'required|integer',
         ]);
-
+    
         // Array to hold total scores for each candidate
         $totalScores = [];
-
+    
         // Loop through the submitted data and calculate total scores
         foreach ($validatedData['candidate_number'] as $index => $candidateNumber) {
-            $composure = $request->input('composure.' . $candidateNumber, 0);
-            $poiseGraceProjection = $request->input('poise_grace_projection.' . $candidateNumber, 0);
-            // Calculate the total score by adding the two scores and dividing by 2
-            $totalScores[$candidateNumber] = ($composure + $poiseGraceProjection) / 2;
+            $composure = $validatedData['composure'][$index];
+            $poiseGraceProjection = $validatedData['poise_grace_projection'][$index];
+    
+            // Calculate the total score by averaging the two scores
+            $totalScore = ($composure + $poiseGraceProjection) / 2;
+    
+            // Check if scores already exist for this candidate and judge
+            $existingScore = SwimSuitScore::where('candidate_number', $candidateNumber)
+                ->where('judge_name', $validatedData['judge_name'][$index])
+                ->first();
+    
+            if ($existingScore) {
+                // Update the existing score
+                $existingScore->update([
+                    'composure' => $composure,
+                    'poise_grace_projection' => $poiseGraceProjection,
+                    'total' => $totalScore,
+                    'rank' => $validatedData['rank'][$index],
+                ]);
+            } else {
+                // Store the new swim-suit score in the database
+                SwimSuitScore::create([
+                    'candidate_number' => $candidateNumber,
+                    'composure' => $composure,
+                    'poise_grace_projection' => $poiseGraceProjection,
+                    'total' => $totalScore,
+                    'rank' => $validatedData['rank'][$index],
+                    'judge_name' => $validatedData['judge_name'][$index],
+                ]);
+            }
+    
+            // Store the total score for ranking purposes
+            $totalScores[$candidateNumber] = $totalScore;
         }
-
+    
         // Sort the total scores in descending order
         arsort($totalScores);
-
+    
         // Calculate ranks based on the sorted total scores
         $rank = 0; // Start rank from 0
         $prevScore = null;
@@ -327,42 +403,80 @@ class UserManagementController extends Controller
             if ($totalScore !== $prevScore) {
                 $rank++;
             }
-            // Store the swimsuit score in the database
-            SwimSuitScore::create([
-                'candidate_number' => $candidateNumber,
-                'composure' => $request->input('composure.' . $candidateNumber, 0),
-                'poise_grace_projection' => $request->input('poise_grace_projection.' . $candidateNumber, 0),
-                'total' => $totalScore,
-                'rank' => $rank,
-                'judge_name' => $validatedData['judge_name'][$index], // Using $index directly
-            ]);
+    
+            // Update the rank in the database for each candidate
+            SwimSuitScore::where('candidate_number', $candidateNumber)
+                ->update(['rank' => $rank]);
+    
             $prevScore = $totalScore;
         }
-
-        // Redirect to gown_table.blade.php
-        return redirect()->route('gown-table')->with('success', 'Gown scores submitted successfully!');
-
+    
+        // Redirect back to the judge dashboard page
+        return redirect()->back()->with('success', 'Swim-Suit scores submitted successfully!');
     }
-
-        public function storeGownScore(Request $request)
+    
+    public function storeGownScore(Request $request)
     {
         // Validate the incoming request data
         $validatedData = $request->validate([
             'candidate_number' => 'required|array',
             'candidate_number.*' => 'required|integer',
+            'suitability' => 'required|array',
+            'suitability.*' => 'required|integer|min:75|max:100',
+            'poise_grace_projection' => 'required|array',
+            'poise_grace_projection.*' => 'required|integer|min:75|max:100',
             'judge_name' => 'required|array',
             'judge_name.*' => 'required|string|max:255',
+            'rank' => 'required|array',
+            'rank.*' => 'required|integer',
         ]);
 
         // Array to hold total scores for each candidate
         $totalScores = [];
 
+        // Array to hold updates for bulk insertion
+        $updates = [];
+
         // Loop through the submitted data and calculate total scores
         foreach ($validatedData['candidate_number'] as $index => $candidateNumber) {
-            $suitability = $request->input('suitability.' . $candidateNumber, 0);
-            $poiseGraceProjection = $request->input('poise_grace_projection.' . $candidateNumber, 0);
-            // Calculate the total score by adding the two scores and dividing by 2
-            $totalScores[$candidateNumber] = ($suitability + $poiseGraceProjection) / 2;
+            $suitability = $validatedData['suitability'][$index];
+            $poiseGraceProjection = $validatedData['poise_grace_projection'][$index];
+
+            // Calculate the total score by averaging the two scores
+            $totalScore = ($suitability + $poiseGraceProjection) / 2;
+
+            // Prepare data for update or creation
+            $data = [
+                'candidate_number' => $candidateNumber,
+                'suitability' => $suitability,
+                'poise_grace_projection' => $poiseGraceProjection,
+                'total' => $totalScore,
+                'rank' => $validatedData['rank'][$index],
+                'judge_name' => $validatedData['judge_name'][$index],
+                // Explicitly set the created_at timestamp
+                'created_at' => now(), // or use Carbon::now() if necessary
+            ];
+
+            // Check if scores already exist for this candidate and judge
+            $existingScore = GownScore::where('candidate_number', $candidateNumber)
+                ->where('judge_name', $data['judge_name'])
+                ->first();
+
+            if ($existingScore) {
+                // Update the existing score
+                $existingScore->update($data);
+            } else {
+                // Store the new gown score in the updates array for bulk insertion
+                $updates[] = $data;
+            }
+
+            // Store the total score for ranking purposes
+            $totalScores[$candidateNumber] = $totalScore;
+        }
+
+        // Perform bulk update for new scores
+        if (!empty($updates)) {
+            GownScore::insert($updates);
         }
 
         // Sort the total scores in descending order
@@ -375,208 +489,398 @@ class UserManagementController extends Controller
             if ($totalScore !== $prevScore) {
                 $rank++;
             }
-            // Store the gown score in the database
-            GownScore::create([
-                'candidate_number' => $candidateNumber,
-                'suitability' => $request->input('suitability.' . $candidateNumber, 0),
-                'poise_grace_projection' => $request->input('poise_grace_projection.' . $candidateNumber, 0),
-                'total' => $totalScore,
-                'rank' => $rank,
-                'judge_name' => $validatedData['judge_name'][$index], // Using $index directly
-            ]);
+
+            // Update the rank in the database for each candidate
+            GownScore::where('candidate_number', $candidateNumber)
+                ->update(['rank' => $rank]);
+
             $prevScore = $totalScore;
         }
 
-        // Redirect back or do any other response handling as needed
+        // Redirect back to the previous page (same page) with success message
         return redirect()->back()->with('success', 'Gown scores submitted successfully!');
     }
 
         public function swimSuitTable()
-    {
-        $candidates = Candidate::all();
+        {
+            // Fetch all candidates
+            $candidates = Candidate::all();
         
-        // Pass candidate data to the view
-        return view('judge.swim_suit_table', ['candidates' => $candidates]);
-    }
-    
+            // Fetch submitted scores for the current judge
+            $judgeName = Session::get('userName');
+            $submittedScores = SwimSuitScore::where('judge_name', $judgeName)
+                ->get()
+                ->keyBy('candidate_number')
+                ->toArray();
+        
+            // Pass candidates and submitted scores to the view
+            return view('judge.swim_suit_table', compact('candidates', 'submittedScores')); 
+        }
+        
         public function gownTable()
         {
             $candidates = Candidate::all();
-            
-            // Pass candidate data to the view
-            return view('judge.gown_table', ['candidates' => $candidates]);
+        
+            // Fetch submitted scores for the current judge
+            $judgeName = Session::get('userName');
+            $submittedScores = GownScore::where('judge_name', $judgeName)
+                ->get()
+                ->keyBy('candidate_number')
+                ->toArray();
+        
+            // Pass candidates and submitted scores to the view
+            return view('judge.gown_table', compact('candidates', 'submittedScores'));
         }
-
-        public function preliminarySwimSuitDash()
-        {
-            // Fetch all candidates
-            $candidates = Candidate::all();
-        
-            // Fetch judges
-            $judges = User::where('role', 'judge')->get();
-        
-            // Initialize an empty array to hold scores
-            $scores = [];
-        
-            // Loop through each candidate
-            foreach ($candidates as $candidate) {
-                // Initialize an empty array to hold scores for this candidate
-                $candidateData = [];
-        
-                // Loop through each judge
-                foreach ($judges as $judge) {
-                    // Find the score given by this judge to the current candidate
-                    $judgeScore = SwimSuitScore::where('candidate_number', $candidate->id)
-                                                ->where('judge_name', $judge->name)
-                                                ->first();
-        
-                    // If the score exists, add it to the candidate data, otherwise, add null
-                    $candidateData[$judge->name] = $judgeScore ? $judgeScore->rank : null;
-                }
-        
-                // Add the candidate's data to the scores array
-                $scores[$candidate->id] = $candidateData;
-            }
-        
-            // Pass candidate data, judges data, and scores data to the view
-            return view('usermanage.prelim_swimsuit_dash', compact('candidates', 'judges', 'scores'));
-        }    
-        
-        public function preliminaryGownDash()
-        {
-            // Fetch all candidates
-            $candidates = Candidate::all();
-        
-            // Fetch judges
-            $judges = User::where('role', 'judge')->get();
-        
-            // Initialize an empty array to hold scores
-            $scores = [];
-        
-            // Loop through each candidate
-            foreach ($candidates as $candidate) {
-                // Initialize an empty array to hold scores for this candidate
-                $candidateData = [];
-        
-                // Loop through each judge
-                foreach ($judges as $judge) {
-                    // Find the score given by this judge to the current candidate
-                    $judgeScore = GownScore::where('candidate_number', $candidate->id)
-                        ->where('judge_name', $judge->name)
-                        ->first();
-        
-                    // If the score exists, add it to the candidate data, otherwise, add null
-                    $candidateData[$judge->name] = $judgeScore ? $judgeScore->rank : null;
-                }
-        
-                // Add the candidate's data to the scores array
-                $scores[$candidate->id] = $candidateData;
-            }
-        
-            // Pass candidate data, judges data, and scores data to the view
-            return view('usermanage.prelim_gown_dash', compact('candidates', 'judges', 'scores'));   
-        }   
-        
-        public function preliminaryOverallRanksDash()
-        {
-            // Fetch all candidates
-            $candidates = Candidate::all();
-            
-            // Initialize arrays to hold ranks for each category
-            $preInterviewRanks = [];
-            $swimSuitRanks = [];
-            $gownRanks = [];
-        
-            // Loop through each candidate
-            foreach ($candidates as $candidate) {
-                // Fetch pre-interview rank for the candidate
-                $preInterviewRanks[$candidate->id] = PreInterviewOR::where('candidate_number', $candidate->id)->value('overall_rank');
-        
-                // Fetch swim suit rank for the candidate
-                $swimSuitRanks[$candidate->id] = SwimSuitOR::where('candidate_number', $candidate->id)->value('overall_rank');
-        
-                // Fetch gown rank for the candidate
-                $gownRanks[$candidate->id] = GownOR::where('candidate_number', $candidate->id)->value('overall_rank');
-            }
-        
-            // Pass the retrieved data to the view
-            return view('usermanage.prelim_overall_ranks', compact('candidates', 'preInterviewRanks', 'swimSuitRanks', 'gownRanks'));
-        }
-        
-        
-
-        public function storePreliminaryOverallRanks(Request $request)
-        {
-            // Fetch overall ranks for each candidate from the request
-            $overallRanks = $request->input('overall_rank');
-        
-            // Loop through overall ranks to store them
-            foreach ($overallRanks as $candidateId => $overallRank) {
-                // Create or update the PreInterviewOR record for this candidate
-                $preInterviewOR = PreInterviewOR::where('candidate_number', $candidateId)->first();
-                if (!$preInterviewOR) {
-                    PreInterviewOR::create([
-                        'candidate_number' => $candidateId,
-                        'overall_rank' => $overallRank,
-                    ]);
-                } else {
-                    $preInterviewOR->update(['overall_rank' => $overallRank]);
-                }
-            }
-        
-            // Redirect to the swim suit overall ranks submission route
-            return redirect()->route('usermanage.prelim_swimsuit_dash')->with('success', 'Pre-interview overall ranks submitted successfully!');
-        }
-        
-        
-        public function storeSwimSuitOverallRanks(Request $request)
-        {
-            // Fetch overall ranks for each candidate from the request
-            $overallRanks = $request->input('overall_rank');
-            
-            // Loop through overall ranks to store them
-            foreach ($overallRanks as $candidateId => $overallRank) {
-                // Create or update the SwimSuitOR record for this candidate
-                $swimSuitOR = SwimSuitOR::where('candidate_number', $candidateId)->first();
-                if (!$swimSuitOR) {
-                    SwimSuitOR::create([
-                        'candidate_number' => $candidateId,
-                        'overall_rank' => $overallRank,
-                    ]);
-                } else {
-                    $swimSuitOR->update(['overall_rank' => $overallRank]);
-                }
-            }
-            
-            // Redirect back or return any other response as needed
-            return redirect()->route('usermanage.prelim_gown_dash')->with('success', 'Swim suit overall ranks submitted successfully!');
-        }
-
-        public function storeGownOverallRanks(Request $request)
-        {
-            // Fetch overall ranks for each candidate from the request
-            $overallRanks = $request->input('overall_rank');
-            
-            // Loop through overall ranks to store them
-            foreach ($overallRanks as $candidateId => $overallRank) {
-                // Create or update the GownOR record for this candidate
-                $gownOR = GownOR::where('candidate_number', $candidateId)->first();
-                if (!$gownOR) {
-                    GownOR::create([
-                        'candidate_number' => $candidateId,
-                        'overall_rank' => $overallRank,
-                    ]);
-                } else {
-                    $gownOR->update(['overall_rank' => $overallRank]);
-                }
-            }
-            
-            // Redirect back or return any other response as needed
-            return redirect()->route('usermanage.prelim_overall_ranks_dash')->with('success', 'Gown overall ranks submitted successfully!');
-        }
-        
+    
         public function SemiFinalDash()
         {
-            return view('usermanage.semi_final_dash');
+            try {
+                // Fetch top 8 candidates
+                $topCandidates = DB::table('semi_final_scores')
+                                    ->select('candidate_number')
+                                    ->groupBy('candidate_number')
+                                    ->orderBy('candidate_number')
+                                    ->limit(8)
+                                    ->get();
+
+                // Calculate total rank based on judges' scores
+                foreach ($topCandidates as $candidate) {
+                    $candidate->total_rank = DB::table('semi_final_scores')
+                                                ->where('candidate_number', $candidate->candidate_number)
+                                                ->sum('rank');
+                }
+
+                // Assign overall rank based on total rank
+                $topCandidates = $topCandidates->sortBy('total_rank')->values();
+                $rank = 1;
+                foreach ($topCandidates as $candidate) {
+                    $candidate->overall_rank = $rank++;
+                }
+
+                // Pass data to the view
+                return view('usermanage.semi_final_dash', compact('topCandidates'));
+            } catch (\Exception $e) {
+                return back()->withError('Error fetching data: ' . $e->getMessage());
+            }
         }
+
+        public function dashboard()
+        {
+            $users = User::where('role', '!=', 'admin')->get();
+            return view('usermanage.dashboard', compact('users'));
+        }
+
+        public function updateUser(Request $request, $id)
+        {
+            $validator = Validator::make($request->all(), [
+                'edit_name' => 'required',
+                'edit_role' => 'required|in:judge_prelim,judge_gown,judge_semi,judge_final', // Corrected spacing
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+
+            $user = User::find($id);
+            if (!$user) {
+                return redirect()->back()->with('error', 'User not found');
+            }
+
+            $user->name = $request->edit_name;
+            $user->role = $request->edit_role;
+            $user->save();
+
+            return redirect()->route('usermanage.dashboard')->with('success', 'User updated successfully');
+        }
+
+        public function insertSemiFinalists(Request $request)
+        {
+            // Retrieve candidate inputs
+            $topCandidateIds = $request->input('candidate'); // Assuming the name of your checkboxes is 'candidate[]'
+            $candidateNames = $request->input('candidate_name'); // Get candidate_name values
+            $overallRanks = $request->input('overallRank'); // Get overallRank values
+        
+            // Validate $topCandidateIds
+            if (!is_array($topCandidateIds) || empty($topCandidateIds)) {
+                return redirect()->back()->with('error', 'Please select candidates for the semi-finals.');
+            }
+        
+            try {
+                // Begin a transaction
+                DB::beginTransaction();
+        
+                // Create an array to hold candidate data
+                $candidates = [];
+        
+                // Process each selected candidate
+                foreach ($topCandidateIds as $key => $candidateId) {
+                    $index = array_search($candidateId, $topCandidateIds);
+        
+                    // Add candidate data to the array
+                    $candidates[] = [
+                        'candidate_number' => $candidateId,
+                        'candidate_name' => $candidateNames[$index],
+                        'overall_rank' => $overallRanks[$index],
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                }
+        
+                // Sort the candidates by their overall_rank
+                usort($candidates, function($a, $b) {
+                    return $a['overall_rank'] - $b['overall_rank'];
+                });
+        
+                // Assign new overall ranks starting from 1
+                foreach ($candidates as $index => &$candidate) {
+                    $candidate['overall_rank'] = $index + 1;
+                }
+        
+                // Insert into TopCandidates table
+                TopCandidates::insert($candidates);
+        
+                // Commit the transaction
+                DB::commit();
+        
+                // Redirect back to the previous page after successful insertion
+                return redirect()->back()->with('success', 'Top candidates inserted into TopCandidates table.');
+            } catch (\Exception $e) {
+                // Rollback the transaction on exception
+                DB::rollback();
+                return redirect()->back()->with('error', 'Failed to insert top candidates. ' . $e->getMessage());
+            }
+        }
+                           
+        public function storeSemiFinalScore(Request $request)
+        {
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'candidate_number' => 'required|array',
+                'candidate_number.*' => 'required|integer',
+                'beauty_of_face' => 'required|array',
+                'beauty_of_face.*' => 'required|integer|min:75|max:100',
+                'poise_grace_projection' => 'required|array',
+                'poise_grace_projection.*' => 'required|integer|min:75|max:100',
+                'composure' => 'required|array',
+                'composure.*' => 'required|integer|min:75|max:100',
+                'judge_name' => 'required|array',
+                'judge_name.*' => 'required|string|max:255',
+                'rank' => 'required|array',
+                'rank.*' => 'required|integer',
+            ]);
+
+            // Array to hold total scores for each candidate
+            $totalScores = [];
+
+            // Loop through the submitted data and calculate total scores
+            foreach ($validatedData['candidate_number'] as $index => $candidateNumber) {
+                $beautyOfFace = $validatedData['beauty_of_face'][$index];
+                $poiseGraceProjection = $validatedData['poise_grace_projection'][$index];
+                $composure = $validatedData['composure'][$index];
+
+                // Calculate the total score by averaging the three scores
+                $totalScore = ($beautyOfFace + $poiseGraceProjection + $composure) / 3;
+
+                // Check if scores already exist for this candidate and judge
+                $existingScore = SemiFinalScore::where('candidate_number', $candidateNumber)
+                    ->where('judge_name', $validatedData['judge_name'][$index])
+                    ->first();
+
+                if ($existingScore) {
+                    // Update the existing score
+                    $existingScore->update([
+                        'beauty_of_face' => $beautyOfFace,
+                        'poise_grace_projection' => $poiseGraceProjection,
+                        'composure' => $composure,
+                        'total' => $totalScore,
+                        'rank' => $validatedData['rank'][$index],
+                    ]);
+                } else {
+                    // Store the new semi-final score in the database
+                    SemiFinalScore::create([
+                        'candidate_number' => $candidateNumber,
+                        'beauty_of_face' => $beautyOfFace,
+                        'poise_grace_projection' => $poiseGraceProjection,
+                        'composure' => $composure,
+                        'total' => $totalScore,
+                        'rank' => $validatedData['rank'][$index],
+                        'judge_name' => $validatedData['judge_name'][$index],
+                    ]);
+                }
+
+                // Store the total score for ranking purposes
+                $totalScores[$candidateNumber] = $totalScore;
+            }
+
+            // Sort the total scores in descending order
+            arsort($totalScores);
+
+            // Calculate ranks based on the sorted total scores
+            $rank = 0; // Start rank from 0
+            $prevScore = null;
+            foreach ($totalScores as $candidateNumber => $totalScore) {
+                if ($totalScore !== $prevScore) {
+                    $rank++;
+                }
+
+                // Update the rank in the database for each candidate
+                SemiFinalScore::where('candidate_number', $candidateNumber)
+                    ->update(['rank' => $rank]);
+
+                $prevScore = $totalScore;
+            }
+
+            // Redirect back to the judge dashboard page
+            return redirect()->back()->with('success', 'Semi-Finals scores submitted successfully!');
+        }
+
+        public function finalsDashboard ()
+        {
+            $candidates = Candidate::all();
+        
+            // Fetch submitted scores for the current judge
+            $judgeName = Session::get('userName');
+            $submittedScores = FinalScore::where('judge_name', $judgeName)
+                ->get()
+                ->keyBy('candidate_number')
+                ->toArray();
+        
+            // Pass candidates and submitted scores to the view
+            return view('judge.finals_dash', compact('candidates', 'submittedScores'));
+        }
+
+        public function storeFinalScore(Request $request)
+        {
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'candidate_number' => 'required|array',
+                'candidate_number.*' => 'required|integer',
+                'beauty_of_face' => 'required|array',
+                'beauty_of_face.*' => 'required|integer|min:75|max:100',
+                'poise_grace_projection' => 'required|array',
+                'poise_grace_projection.*' => 'required|integer|min:75|max:100',
+                'composure' => 'required|array',
+                'composure.*' => 'required|integer|min:75|max:100',
+                'judge_name' => 'required|array',
+                'judge_name.*' => 'required|string|max:255',
+                'rank' => 'required|array',
+                'rank.*' => 'required|integer',
+            ]);
+
+            // Array to hold total scores for each candidate
+            $totalScores = [];
+
+            // Loop through the submitted data and calculate total scores
+            foreach ($validatedData['candidate_number'] as $index => $candidateNumber) {
+                $beautyOfFace = $validatedData['beauty_of_face'][$index];
+                $poiseGraceProjection = $validatedData['poise_grace_projection'][$index];
+                $composure = $validatedData['composure'][$index];
+
+                // Calculate the total score by averaging the three scores
+                $totalScore = ($beautyOfFace + $poiseGraceProjection + $composure) / 3;
+
+                // Check if scores already exist for this candidate and judge
+                $existingScore = FinalScore::where('candidate_number', $candidateNumber)
+                    ->where('judge_name', $validatedData['judge_name'][$index])
+                    ->first();
+
+                if ($existingScore) {
+                    // Update the existing score
+                    $existingScore->update([
+                        'beauty_of_face' => $beautyOfFace,
+                        'poise_grace_projection' => $poiseGraceProjection,
+                        'composure' => $composure,
+                        'total' => $totalScore,
+                        'rank' => $validatedData['rank'][$index],
+                    ]);
+                } else {
+                    // Store the new final score in the database
+                    FinalScore::create([
+                        'candidate_number' => $candidateNumber,
+                        'beauty_of_face' => $beautyOfFace,
+                        'poise_grace_projection' => $poiseGraceProjection,
+                        'composure' => $composure,
+                        'total' => $totalScore,
+                        'rank' => $validatedData['rank'][$index],
+                        'judge_name' => $validatedData['judge_name'][$index],
+                    ]);
+                }
+
+                // Store the total score for ranking purposes
+                $totalScores[$candidateNumber] = $totalScore;
+            }
+
+            // Sort the total scores in descending order
+            arsort($totalScores);
+
+            // Calculate ranks based on the sorted total scores
+            $rank = 0; // Start rank from 0
+            $prevScore = null;
+            foreach ($totalScores as $candidateNumber => $totalScore) {
+                if ($totalScore !== $prevScore) {
+                    $rank++;
+                }
+
+                // Update the rank in the database for each candidate
+                FinalScore::where('candidate_number', $candidateNumber)
+                    ->update(['rank' => $rank]);
+
+                $prevScore = $totalScore;
+            }
+
+            // Redirect back to the judge dashboard page
+            return redirect()->back()->with('success', 'Final scores submitted successfully!');
+        }
+
+        public function insertFinalists(Request $request)
+        {
+            // Retrieve candidate inputs
+            $topCandidateIds = $request->input('candidate'); // Array of selected candidate IDs
+            $overallRanks = $request->input('overallRank'); // Array of corresponding overall ranks
+        
+            // Validate $topCandidateIds and $overallRanks
+            if (!is_array($topCandidateIds) || empty($topCandidateIds) || !is_array($overallRanks) || empty($overallRanks)) {
+                return redirect()->back()->with('error', 'Please select candidates and provide overall ranks for the semi-finals.');
+            }
+        
+            try {
+                // Begin a transaction
+                DB::beginTransaction();
+        
+                // Fetch candidate names and overall ranks from topCandidates
+                $topCandidates = TopCandidates::whereIn('candidate_number', $topCandidateIds)->get();
+        
+                // Create an array to hold finalist data
+                $finalists = [];
+        
+                // Process each selected candidate
+                foreach ($topCandidates as $index => $candidate) {
+                    // Ensure we have a corresponding overall rank
+                    if (isset($overallRanks[$index])) {
+                        $finalists[] = [
+                            'candidate_number' => $candidate->candidate_number,
+                            'candidate_name' => $candidate->candidate_name,
+                            'overall_rank' => $overallRanks[$index], // Assign overall rank based on form submission
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ];
+                    }
+                }
+        
+                // Insert into FinalistCandidates model/table
+                FinalistCandidates::insert($finalists);
+        
+                // Commit the transaction
+                DB::commit();
+        
+                // Redirect back to the previous page after successful insertion
+                return redirect()->back()->with('success', 'Top finalists inserted successfully.');
+            } catch (\Exception $e) {
+                // Rollback the transaction on exception
+                DB::rollback();
+                return redirect()->back()->with('error', 'Failed to insert top finalists. ' . $e->getMessage());
+            }
+        }
+        
+
 }

@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pre_interview', function (Blueprint $table) {
+        Schema::create('gown_scores', function (Blueprint $table) {
             $table->id();
             $table->integer('candidate_number');
-            $table->integer('total');
+            $table->integer('suitability');
+            $table->integer('poise_grace_projection');
+            $table->decimal('total', 8, 2); // Adjust precision and scale as per your requirement
             $table->integer('rank');
             $table->string('judge_name');
             $table->timestamps();
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pre_interview');
+        Schema::dropIfExists('gown_scores');
     }
 };

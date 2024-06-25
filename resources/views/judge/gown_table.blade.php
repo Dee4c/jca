@@ -29,7 +29,7 @@
             left: 0;
             top: 0;
             height: 100%;
-            background: rgb(0, 0, 0);
+            background: rgb(168, 61, 61);
             background: linear-gradient(90deg, rgba(0, 0, 0, 1) 59%, rgba(198, 174, 53, 1) 99%);
             width: 250px;
             padding: 6px 14px;
@@ -267,26 +267,18 @@
             margin-left: 250px;
             padding: 20px;
         }
-    
-        /* Updated table styles */
-        /* table {
-            width: 100%;
-            table-layout: fixed;
-            background-color: #11101D;
-            color: #fff;
-        } */
 
         .tbl-header {
             background-color: rgba(255, 255, 255, 0.3);
         }
 
         .tbl-content {
-    background-color: rgba(0, 0, 0, 0); /* Transparent background */
-    height: 300px;
-    overflow-x: auto;
-    margin-top: 0px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
+            background-color: rgba(0, 0, 0, 0);
+            height: 300px;
+            overflow-x: auto;
+            margin-top: 0px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
 
         th {
             padding: 15px; /* Adjusted padding for header */
@@ -307,15 +299,6 @@
             border-bottom: solid 1px rgba(255, 255, 255, 0.1);
         }
 
-        /* Adjusted table responsive styles */
-        .table-responsive {
-            width: 80%; 
-            margin:auto;
-            overflow-x: auto;
-            padding: 20px; 
-            margin-left: 300px;
-        }
-
         .title-id {
             color: white;
         }
@@ -327,8 +310,9 @@
         .category-table {
             width: 1300px;
             margin-left: 300px;
-            display: none; /* Hide all tables by default */
+            display: none; 
         }
+       
     </style>
 </head>
 <body>
@@ -337,15 +321,14 @@
         <div class="logo_name">Miss Q</div>
     </div>
     <ul class="nav-list">
-        <li>
-            <a href="{{ route('judge.judge_dashboard') }}">
+        <li class="dropdown">
+            <a href="#">
                 <i class='bx bx-user'></i>
                 <span class="links_name">PRELIMINARIES</span>
             </a>
-            <span class="tooltip">PRELIMINARIES</span>
         </li>
         <li>
-            <a href="{{route('judge.semi_finals_dash')}}">
+            <a href="{{ route('judge.semi_finals_dash') }}">
                 <i class='bx bxs-user-check'></i>
                 <span class="links_name">SEMI-FINALS</span>
             </a>
@@ -362,7 +345,7 @@
             <div class="profile-details">
                 <img src="profile.jpg" alt="profileImg">
                 <div class="name_job">
-                    <div class="name">Admin</div>
+                    <div class="name">{{ Session::get('userName') }}</div> <!-- Display user's name from session -->
                 </div>
             </div>
             <a href="{{ route('logout') }}" class="logout-link">
@@ -372,118 +355,154 @@
     </ul>
 </div>
 
-<div class="content">
+     <div class="content">
     <div class="container">
+        @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+   
         <h1 class="title-id">PRELIMINARY TABLE</h1>
         <div class="dropdown">
             <select class="form-select" id="categorySelect">
                 <option value="">Select Category</option>
                 <option value="gown">Gown</option>
-            </select>            
+            </select>
         </div>
         <br>
 
-    <!-- Gown Form -->
-    <div id="gown_table" class="category-table-gown" style="display: none;">
-        <form id="gown_form" action="{{ route('gown-scores.store') }}" method="POST">
-            @csrf
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Candidate Number</th>
-                        <th>Suitability (Score: 75-100)</th>
-                        <th>Poise, Grace, and Projection (Score: 75-100)</th>
-                        <th>Judge Name</th>
-                        <th>Total Score</th>
-                        <th>Rank</th>
-                    </tr>
-                </thead>
-                <tbody id="gown_table_body">
-                    <!-- Table content for gown category will be dynamically populated here -->
-                    @foreach($candidates as $candidate)
-                    <tr>
-                        <td>{{ $candidate->candidateNumber }}</td>
-                        <td>
-                            <input type="number" name="suitability[{{ $candidate->id }}]" min="75" max="100" required onchange="calculateGownTotalScore({{ $candidate->id }})">
-                        </td>
-                        <td>
-                            <input type="number" name="poise_grace_projection[{{ $candidate->id }}]" min="75" max="100" required onchange="calculateGownTotalScore({{ $candidate->id }})">
-                        </td>
-                        <td>
-                            <input type="text" name="judge_name[]" required>
-                        </td>
-                        <td id="totalScore_gown_{{ $candidate->id }}"></td>
-                        <td>
-                            <input type="text" name="rank[]" id="rank_gown_{{ $candidate->id }}" readonly>
-                        </td>
-                        <input type="hidden" name="candidate_number[]" value="{{ $candidate->candidateNumber }}">
-                        <input type="hidden" name="candidate_rank[]" id="candidate_rank_gown_{{ $candidate->id }}">
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+        <!-- Gown Form -->
+        <div id="gown_table" class="category-table-gown" style="display: none;">
+            <form id="gown_form" action="{{ route('gown-scores.store') }}" method="POST">
+                @csrf
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Candidate Number</th>
+                            <th>Suitability (Score: 75-100)</th>
+                            <th>Poise, Grace and Projection (Score: 75-100)</th>
+                            <th>Total Score</th>
+                            <th>Rank</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gown_table_body">
+                        @foreach($candidates as $candidate)
+                        <tr>
+                            <td>{{ $candidate->candidateNumber }}</td>
+                            <td>
+                                <input type="number" name="suitability[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
+                                value="{{ $submittedScores[$candidate->candidateNumber]['suitability'] ?? '' }}" 
+                                onchange="calculateTotalScore({{ $candidate->id }})">
+                            </td>
+                            <td>
+                                <input type="number" name="poise_grace_projection[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
+                                value="{{ $submittedScores[$candidate->candidateNumber]['poise_grace_projection'] ?? '' }}" 
+                                onchange="calculateTotalScore({{ $candidate->id }})">
+                            </td>
+                            <td>
+                                <input type="text" name="total_score[]" id="totalScore_{{ $candidate->id }}" readonly 
+                                value="{{ $submittedScores[$candidate->candidateNumber]['total'] ?? '' }}">
+                            </td>
+                            <td>
+                                <input type="text" name="rank[]" id="rank_{{ $candidate->id }}" readonly 
+                                value="{{ $submittedScores[$candidate->candidateNumber]['rank'] ?? '' }}">
+                            </td>
+                            <input type="hidden" name="judge_name[]" value="{{ Session::get('userName') }}">
+                            <input type="hidden" name="candidate_number[]" value="{{ $candidate->candidateNumber }}">
+                            <input type="hidden" name="candidate_rank[]" id="candidate_rank_{{ $candidate->id }}">
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <button type="submit" class="btn btn-primary" id="submitButton" @if(!empty($submittedScores)) disabled @endif>Submit</button>
+                <button type="button" class="btn btn-secondary" id="editButton" onclick="gownEnableEditing()">@if(!empty($submittedScores)) Edit Scores @else Cancel Edit @endif</button>
+            </form>
+        </div>
     </div>
-    
-    <script>
-        // Function to calculate the total score and rank for gown category
-        function calculateGownTotalScore(candidateId) {
-            var suitabilityScore = parseInt(document.querySelector('input[name="suitability[' + candidateId + ']"]').value) || 0;
-            var poiseGraceProjectionScore = parseInt(document.querySelector('input[name="poise_grace_projection[' + candidateId + ']"]').value) || 0;
-            var totalScore = (suitabilityScore + poiseGraceProjectionScore) / 2; // Divide by 2
-            document.getElementById("totalScore_gown_" + candidateId).textContent = totalScore;
-            updateGownRank(); // Update the rank after calculating the total score
-        }
-    
-        // Function to update the rank for gown category
-        function updateGownRank() {
-            var totalScores = [];
-            document.querySelectorAll('td[id^="totalScore_gown_"]').forEach(function(scoreElement) {
-                var score = parseInt(scoreElement.textContent);
-                totalScores.push(score);
-            });
-            totalScores.sort(function(a, b) {
-                return b - a;
-            });
-            var rank = 1;
-            var prevScore = null;
-            totalScores.forEach(function(score) {
-                if (score !== prevScore) {
-                    document.querySelectorAll('td[id^="totalScore_gown_"]').forEach(function(scoreElement) {
-                        if (parseInt(scoreElement.textContent) === score) {
-                            var candidateId = scoreElement.id.split("_")[2]; // Updated to get the correct candidate ID
-                            var rankInput = document.getElementById("rank_gown_" + candidateId);
-                            var candidateRankInput = document.getElementById("candidate_rank_gown_" + candidateId);
-                            rankInput.value = rank;
-                            candidateRankInput.value = rank;
-                        }
-                    });
-                }
-                prevScore = score;
-                rank++;
-            });
-        }
-    
-        // Event listener for category selection change
-        document.getElementById('categorySelect').addEventListener('change', function() {
-            var selectedCategory = this.value;
-            document.querySelectorAll('.category-table').forEach(function(table) {
-                table.style.display = 'none';
-            });
-            if (selectedCategory === 'gown') {
-                document.getElementById(selectedCategory + '_table').style.display = 'block';
+</div>
+
+<script>
+    // Function to calculate the total score and rank for gown category
+    function calculateTotalScore(candidateId) {
+        var suitabilityScore = parseInt(document.querySelector('input[name="suitability[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
+        var poiseGraceProjectionScore = parseInt(document.querySelector('input[name="poise_grace_projection[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
+        var totalScore = (suitabilityScore + poiseGraceProjectionScore) / 2; // Calculate the average
+        document.getElementById("totalScore_" + candidateId).value = totalScore.toFixed(2); // Display total score
+        updateRank(); // Update ranks after calculating total score
+    }
+
+    // Function to update the rank for gown category
+    function updateRank() {
+        var totalScores = [];
+        document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
+            var score = parseFloat(scoreInput.value);
+            totalScores.push(score);
+        });
+
+        totalScores.sort(function(a, b) {
+            return b - a;
+        });
+
+        var rank = 1;
+        var prevScore = null;
+        totalScores.forEach(function(score) {
+            if (score !== prevScore) {
+                var rankCount = 0;
+                document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
+                    if (parseFloat(scoreInput.value) === score) {
+                        rankCount++;
+                    }
+                });
+
+                var currentRank = rank;
+                document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
+                    if (parseFloat(scoreInput.value) === score) {
+                        var candidateId = scoreInput.id.split("_")[1];
+                        var rankInput = document.getElementById("rank_" + candidateId);
+                        rankInput.value = currentRank;
+                    }
+                });
+
+                rank += rankCount;
             }
+            prevScore = score;
         });
-    
-        // Call calculateGownTotalScore for initial calculation in gown category
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('input[name^="suitability["], input[name^="poise_grace_projection["]').forEach(function(input) {
-                var candidateId = input.name.match(/\d+/)[0];
-                calculateGownTotalScore(candidateId);
-            });
+    }
+
+    // Event listener for category selection change
+    document.getElementById('categorySelect').addEventListener('change', function() {
+        var selectedCategory = this.value;
+        document.querySelectorAll('.category-table').forEach(function(table) {
+            table.style.display = 'none';
         });
-    </script>
+        if (selectedCategory !== '') {
+            document.getElementById(selectedCategory + '_table').style.display = 'block';
+            if (selectedCategory === 'gown') {
+                document.getElementById('gown_table').style.display = 'table';
+            } else {
+                document.getElementById('gown_table').style.display = 'none';
+            }
+        }
+    });
+
+    // Call calculateTotalScore for initial calculation in gown category
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[name^="suitability"], input[name^="poise_grace_projection"]').forEach(function(input) {
+            var candidateId = input.dataset.candidateId;
+            calculateTotalScore(candidateId);
+        });
+    });
+
+    // Function to enable editing of scores
+    function gownEnableEditing() {
+        document.querySelectorAll('input[name^="suitability"], input[name^="poise_grace_projection"]').forEach(function(input) {
+            input.removeAttribute('readonly');
+        });
+        document.getElementById('submitButton').removeAttribute('disabled');
+    }
+</script>
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

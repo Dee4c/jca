@@ -5,74 +5,78 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Session;
-use App\Models\Candidate;
 
 class UserAuthenticationController extends Controller
 {
     public function login()
     {
-        // Check if the user is already logged in
         if (Session::has('loginId')) {
             $userId = Session::get('loginId');
             $user = User::find($userId);
-    
-            // Redirect to the appropriate dashboard based on user's role
-            if ($user && $user->username === 'admin') {
-                return redirect()->route('usermanage.dashboard');
-            } else {
-                return redirect('./login');
+
+            if ($user) {
+                switch ($user->role) {
+                    case 'admin':
+                        return redirect()->route('usermanage.dashboard');
+                    case 'judge_prelim':
+                        return redirect()->route('judge.judge_dashboard');
+                    case 'judge_gown':
+                        return redirect()->route('judge.gown_table');
+                    case 'judge_semi':
+                            return redirect()->route('judge.semi_finals_dash');
+                    case 'judge_final':
+                            return redirect()->route('judge.finals_dash');
+                }
             }
-        } else {
-            // If not logged in, show the login page
-            return view("auth.login");
         }
+
+        return view('auth.login');
     }
 
-        public function loginUser(Request $request)
+    public function loginUser(Request $request)
     {
         $request->validate([
-            'username' => 'required',
-            'password' => 'required',
+            'unique_code' => 'required_without:username', // Validate unique_code without requiring username
+            'username' => 'required_without:unique_code', // Validate username without requiring unique_code
+            'password' => 'required_with:username', // Require password only when username is present
         ]);
 
-        // Attempt to find the user by username
-        $user = User::where('username', $request->username)->first();
+        if ($request->has('unique_code')) {
+            $user = User::where('unique_code', $request->unique_code)
+                        ->whereIn('role', ['admin', 'judge_prelim', 'judge_gown', 'judge_semi', 'judge_final'])
+                        ->first();
+        } else {
+            $user = User::where('username', $request->username)
+                        ->where('password', $request->password)
+                        ->first();
+        }
 
         if ($user) {
-            // Check if the provided password matches the user's password
-            if ($request->password === $user->password) {
-                // Log the user in based on their role
-                if ($user->username === 'admin') {
-                    // If the user is admin, redirect to admin dashboard
-                    $request->session()->put('loginId', $user->id);
-                    return redirect('usermanage/dashboard');
-                } else {
-                    // For other users, redirect to judge dashboard
-                    $request->session()->put('loginId', $user->id);
-                    return redirect('judge/judgeDashboard');
-                }
-            } else {
-                // Flash error message for incorrect password
-                Session::flash('fail', 'Password does not match');
-                return back()->with('fail', 'Password does not match');
+            $request->session()->put('loginId', $user->id);
+            $request->session()->put('userName', $user->name);
+
+            switch ($user->role) {
+                case 'admin':
+                    return redirect()->route('usermanage.dashboard');
+                case 'judge_prelim':
+                    return redirect()->route('judge.judge_dashboard');
+                case 'judge_gown':
+                    return redirect()->route('judge.gown_table');
+                case 'judge_semi':
+                    return redirect()->route('judge.semi_finals_dash');
+                case 'judge_final':
+                    return redirect()->route('judge.finals_dash');
+                default:
+                    return redirect()->route('default.dashboard');
             }
         } else {
-            // Flash error message for unregistered username
-            Session::flash('fail', 'This username is not registered');
-            return back()->with('fail', 'This username is not registered');
+            return back()->with('fail', 'Invalid credentials');
         }
-    }
-
-    public function dashboard()
-    {
-        $users = User::where('username', '!=', 'admin')->get();
-        return view('usermanage.dashboard', compact('users'));
     }
     
     public function logout()
     {
-        Session::forget('loginId'); // Remove 'loginId' from session
-        return redirect('login'); // Redirect to the login page after logout
+        Session::forget(['loginId', 'userName']);
+        return redirect('login');
     }
 }
-

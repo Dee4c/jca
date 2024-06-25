@@ -18,6 +18,7 @@ class Candidate extends Model
         'preInterviewRank', // Add property for pre-interview rank
         'swimSuitRank', // Add property for swim suit rank
         'gownRank', // Add property for gown rank
+        'semiFinalRank'
     ];
 
 }

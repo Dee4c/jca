@@ -15,15 +15,17 @@ class AdminUserSeeder extends Seeder
     public function run()
     {
         // Check if the admin user already exists
-        $adminUser = User::where('username', 'admin')->first();
+        $adminUser = User::where('role', 'admin')->first();
         if (!$adminUser) {
             // Create the admin user
             User::create([
                 'name' => 'Admin',
-                'username' => 'admin',
-                'password' => 'admin1',
                 'role' => 'admin',
+                'unique_code' => 'one',
             ]);
+            $this->command->info('Admin user created successfully.');
+        } else {
+            $this->command->info('Admin user already exists.');
         }
     }
 }

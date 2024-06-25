@@ -409,9 +409,9 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Username</th>
-                    <th>Password</th>
                     <th>Name</th>
+                    <th>Role</th>
+                    <th>Unique Code</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -419,9 +419,9 @@
                 <!-- Replace the code below with your user data retrieval and display logic -->
                 @foreach($users as $user)
                 <tr>
-                    <td>{{ $user->username }}</td>
-                    <td>{{ $user->password }}</td>
                     <td>{{ $user->name }}</td>
+                    <td>{{ $user->role }}</td>
+                    <td>{{ $user->unique_code }}</td>
                     <td>
                         <!-- Edit button -->
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ $user->id }}">
@@ -431,71 +431,72 @@
                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $user->id }}">
                             Delete
                         </button>
-                        <!-- Edit Account Modal -->
-                        <div class="modal fade" id="editModal{{ $user->id }}" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="editModalLabel">Edit Account</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <!-- Edit form -->
-                                        <form action="{{ route('user.update', $user->id) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="form-group">
-                                                <label for="edit_username">Username</label>
-                                                <input type="text" class="form-control" id="edit_username" name="edit_username" value="{{ $user->username }}" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="edit_password">Password</label>
-                                                <input type="password" class="form-control" id="edit_password" name="edit_password" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="edit_name">Name</label>
-                                                <input type="text" class="form-control" id="edit_name" name="edit_name" value="{{ $user->name }}" required>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" class="btn btn-primary">Save changes</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Delete Account Modal -->
-                        <div class="modal fade" id="deleteModal{{ $user->id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="deleteModalLabel">Delete Account</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        Are you sure you want to delete the account for {{ $user->username }}?
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <form action="{{ route('user.delete', $user->id) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </td>
                 </tr>
+
+               <!-- Edit Account Modal -->
+            <div class="modal fade" id="editModal{{ $user->id }}" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel">Edit Account</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Edit form -->
+                            <form action="{{ route('user.update', $user->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="form-group">
+                                    <label for="edit_name">Name</label>
+                                    <input type="text" class="form-control" id="edit_name" name="edit_name" value="{{ $user->name }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="edit_role">Role</label>
+                                    <select class="form-control" id="edit_role" name="edit_role" required>
+                                        <option value="judge_prelim" {{ $user->role === 'judge_prelim' ? 'selected' : '' }}>Judge for Preliminary</option>
+                                        <option value="judge_gown" {{ $user->role === 'judge_gown' ? 'selected' : '' }}>Judge for Gown</option>
+                                        <option value="judge_semi" {{ $user->role === 'judge_semi' ? 'selected' : '' }}>Judge for Semi-Finals</option>
+                                        <option value="judge_final" {{ $user->role === 'judge_final' ? 'selected' : '' }}>Judge for Finals</option>
+                                    </select>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Delete Account Modal -->
+                <div class="modal fade" id="deleteModal{{ $user->id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">Delete Account</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete the account for {{ $user->username }}?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <form action="{{ route('user.delete', $user->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 @endforeach
             </tbody>
         </table>
     </div>
 </div>
-
 
 <!-- Add Judge Modal -->
 <div class="modal fade" id="addJudgeModal" tabindex="-1" aria-labelledby="addJudgeModalLabel" aria-hidden="true">
@@ -505,7 +506,7 @@
                 <h5 class="modal-title" id="addJudgeModalLabel">Add Judge</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="judgeFormsContainer">
+            <div class="modal-body">
                 <!-- Initial Judge Form -->
                 <form id="addJudgeForm" method="POST" action="{{ route('addJudge') }}">
                     @csrf
@@ -516,30 +517,36 @@
                         <div class="alert alert-danger">{{ Session::get('fail') }}</div>
                     @endif
                     <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" name="username" required autocomplete="username" autofocus>
-                        <div id="usernameError" class="invalid-feedback"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" name="password" required autocomplete="new-password">
-                        <div id="passwordError" class="invalid-feedback"></div>
-                    </div>
-                    <div class="form-group">
                         <label for="name">Name</label>
-                        <input type="text" class="form-control" name="name" required autocomplete="new-name">
-                        <div id="nameError" class="invalid-feedback"></div>
+                        <input type="text" class="form-control" name="name" required autocomplete="name" autofocus>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <select class="form-control" name="role" required>
+                            <option value="judge_prelim">Judge for Preliminary</option>
+                            <option value="judge_gown">Judge for Gown</option>
+                            <option value="judge_semi">Judge for Semi-Finals</option>
+                            <option value="judge_final">Judge for Finals</option>
+                        </select>
+                        @error('role')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Add Judge</button>
+                </div>
+                </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Add Judge</button>
-            </div>
-            </form>
         </div>
     </div>
 </div>
-</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>

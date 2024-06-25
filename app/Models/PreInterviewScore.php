@@ -10,6 +10,6 @@ class PreInterviewScore extends Model
     use HasFactory;
 
     protected $fillable = [
-        'candidate_number', 'total', 'rank', 'judge_name',
-    ];
+        'candidate_number', 'composure', 'poise_grace_projection', 'total', 'rank', 'judge_name',
+    ];    
 }

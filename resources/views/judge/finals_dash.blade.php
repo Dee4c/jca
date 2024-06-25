@@ -355,20 +355,20 @@
 
 <div class="content">
     <div class="container">
-        <h1 class="title-id">SEMI-FINALS TABLE</h1>
+        <h1 class="title-id">FINAL TABLE</h1>
         <div class="dropdown">
             <select class="form-select" id="categorySelect">
                 <option value="">Select Category</option>
-                <option value="semi_final">Semi-Finals</option>
+                <option value="final">Finals</option>
                 <!-- Add other categories as needed -->
             </select>
         </div>
         <br>
 
-        <!-- Semi-Finals Form -->
-        <form id="semi_final_form" action="{{ route('semi-final-scores.store') }}" method="POST">
+        <!-- Finals Form -->
+        <form id="final_form" action="{{ route('final-scores.store') }}" method="POST">
             @csrf
-            <div id="semi_final_table" class="category-table" style="display: none;">
+            <div id="final_table" class="category-table" style="display: none;">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -380,7 +380,7 @@
                             <th>Rank</th>
                         </tr>
                     </thead>
-                    <tbody id="semi_final_table_body">
+                    <tbody id="final_table_body">
                         @foreach($candidates as $candidate)
                         <tr>
                             <td>{{ $candidate->candidate_number }}</td>
@@ -422,7 +422,7 @@
 </div>
 
 <script>
-    // Function to calculate the total score and rank for semi-finals category
+    // Function to calculate the total score and rank for finals category
     function calculateTotalScore(candidateId) {
         var beautyOfFaceScore = parseInt(document.querySelector('input[name="beauty_of_face[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
         var poiseGraceProjectionScore = parseInt(document.querySelector('input[name="poise_grace_projection[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
@@ -432,7 +432,7 @@
         updateRank(); // Update ranks after calculating total score
     }
 
-    // Function to update the rank for semi-finals category
+    // Function to update the rank for finals category
     function updateRank() {
         var totalScores = [];
         document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
@@ -476,12 +476,12 @@
         document.querySelectorAll('.category-table').forEach(function(table) {
             table.style.display = 'none';
         });
-        if (selectedCategory === 'semi_final') {
-            document.getElementById('semi_final_table').style.display = 'table';
+        if (selectedCategory === 'final') {
+            document.getElementById('final_table').style.display = 'table';
         }
     });
 
-    // Call calculateTotalScore for initial calculation in semi-finals category
+    // Call calculateTotalScore for initial calculation in finals category
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('input[name^="beauty_of_face"], input[name^="poise_grace_projection"], input[name^="composure"]').forEach(function(input) {
             var candidateId = input.dataset.candidateId;

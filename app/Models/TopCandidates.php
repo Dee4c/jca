@@ -5,11 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SwimSuitScore extends Model
+class TopCandidates extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'candidate_number', 'composure', 'poise_grace_projection', 'total', 'rank', 'judge_name',
+        'candidate_number',
+        'candidate_name',
+        'overall_rank',
+        // Add other fields as needed
     ];
 }
+

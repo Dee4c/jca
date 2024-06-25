@@ -4,53 +4,47 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserAuthenticationController;
 use App\Http\Controllers\UserManagementController;
 
+// Home Routes
 Route::redirect('/', '/login'); 
 Route::get('/login', [UserAuthenticationController::class, 'login'])->name('alreadyLoggedIn');
 Route::post('login-user', [UserAuthenticationController::class, 'loginUser'])->name('login-user');
-Route::get('/usermanage/dashboard', [UserAuthenticationController::class, 'dashboard'])->middleware('isLoggedIn')->name('usermanage.dashboard');
 Route::get('/logout', [UserAuthenticationController::class, 'logout'])->name('logout');
-Route::get('/usermanage/addjudge', [UserManagementController::class, 'addJudgeForm'])->middleware('isLoggedIn')->name('addJudgeForm');
-Route::post('/usermanage/addjudge', [UserManagementController::class, 'addJudge'])->middleware('isLoggedIn')->name('addJudge');
-Route::delete('/user/{id}', [UserManagementController::class, 'deleteUser'])->name('user.delete');
-Route::put('/user/{id}', [UserManagementController::class, 'updateUser'])->middleware('isLoggedIn')->name('user.update');
-Route::post('/candidates', [UserManagementController::class, 'storeCandidate'])->middleware('isLoggedIn')->name('candidate.store');
-Route::get('/candidates/create', [UserManagementController::class, 'createCandidate'])->middleware('isLoggedIn')->name('candidate.create');
-Route::get('/usermanage/candidate_dash', [UserManagementController::class, 'candidateDash'])->middleware('isLoggedIn')->name('usermanage.candidate_dash');
-Route::delete('/candidates/{id}', [UserManagementController::class, 'deleteCandidate'])->middleware('isLoggedIn')->name('candidate.delete');
-Route::put('/candidates/{id}', [UserManagementController::class, 'updateCandidate'])->middleware('isLoggedIn')->name('candidate.update');
-Route::get('/usermanage/preliminary_dash', [UserManagementController::class, 'preliminaryDash'])->name('usermanage.preliminary_dash');
-Route::get('/usermanage/prelim_swimsuit_dash', [UserManagementController::class, 'preliminarySwimSuitDash'])->name('usermanage.prelim_swimsuit_dash');
-Route::get('/usermanage/prelim_gown_dash', [UserManagementController::class, 'preliminaryGownDash'])->name('usermanage.prelim_gown_dash');
-Route::get('/usermanage/prelim_overall_ranks', [UserManagementController::class, 'preliminaryOverallRanksDash'])->name('usermanage.prelim_overall_ranks_dash');
-Route::get('/judge/judgeDashboard', [UserManagementController::class, 'judgeDashboard'])->middleware('isLoggedIn')->name('judge.judge_dashboard');
-Route::get('/pre-interview-scores', [UserManagementController::class, 'getPreInterviewScores']);
-Route::get('/judge/semifinalsDashboard', [UserManagementController::class, 'semifinalsDashboard'])->middleware('isLoggedIn')->name('judge.semi_finals_dash');
-Route::post('/pre-interview-scores', [UserManagementController::class, 'storePreInterviewScore'])->middleware('isLoggedIn')->name('pre-interview-scores.store');
-Route::post('/swim-suit-scores', [UserManagementController::class,'storeSwimSuitScore'])->middleware('isLoggedIn')->name('swim-suit-scores.store');
-Route::post('gown-scores', [UserManagementController::class, 'storeGownScore'])->middleware('isLoggedIn')->name('gown-scores.store');
-Route::get('/swim-suit-table', [UserManagementController::class, 'swimSuitTable'])->middleware('isLoggedIn')->name('swim-suit-table');
-Route::get('/gown-table', [UserManagementController::class, 'gownTable'])->middleware('isLoggedIn')->name('gown-table');
-Route::post('/usermanage/preliminary_overall_ranks', [UserManagementController::class, 'storePreliminaryOverallRanks'])->name('usermanage.preliminary_overall_ranks.store');
-Route::post('/usermanage/swimsuit_overall_ranks', [UserManagementController::class, 'storeSwimSuitOverallRanks'])->name('usermanage.swimsuit_overall_ranks.store');
-Route::post('/usermanage/gown_overall_ranks', [UserManagementController::class, 'storeGownOverallRanks'])->name('usermanage.gown_overall_ranks.store');
-Route::get('/usermanage/semi_final_dash', [UserManagementController::class,'SemiFinalDash'])->middleware('isLoggedIn')->name('usermanage.semi_final_dash');
 
+// User Management Routes
+Route::middleware(['isLoggedIn'])->group(function () {
+    Route::get('/usermanage/dashboard', [UserManagementController::class, 'dashboard'])->name('usermanage.dashboard');
+    Route::get('/usermanage/addjudge', [UserManagementController::class, 'addJudgeForm'])->name('addJudgeForm');
+    Route::post('/usermanage/addjudge', [UserManagementController::class, 'addJudge'])->name('addJudge');
+    Route::put('/user/{id}', [UserManagementController::class, 'updateUser'])->name('user.update');
+    Route::delete('/user/{id}', [UserManagementController::class, 'deleteUser'])->name('user.delete');
+    
+    // Candidate Management Routes
+    Route::get('/candidates/create', [UserManagementController::class, 'createCandidate'])->name('candidate.create');
+    Route::post('/candidates', [UserManagementController::class, 'storeCandidate'])->name('candidate.store');
+    Route::get('/usermanage/candidate_dash', [UserManagementController::class, 'candidateDash'])->name('usermanage.candidate_dash');
+    Route::put('/candidates/{id}', [UserManagementController::class, 'updateCandidate'])->name('candidate.update');
+    Route::delete('/candidates/{id}', [UserManagementController::class, 'deleteCandidate'])->name('candidate.delete');
 
+    // Preliminary Management Routes
+    Route::get('/usermanage/preliminary_dash', [UserManagementController::class, 'preliminaryDash'])->name('usermanage.preliminary_dash');
+    // Semi-Final Management Routes
+    Route::get('/usermanage/semi_final_dash', [UserManagementController::class, 'SemiFinalDash'])->name('usermanage.semi_final_dash');
+    Route::post('/insert-semi-finalists', [UserManagementController::class, 'insertSemiFinalists'])->name('insertSemiFinalists');
+    // Final Management Routes
+    Route::post('/insert-finalists', [UserManagementController::class, 'insertFinalists'])->name('insertFinalists');
+    // Judge Dashboard Routes
+    Route::get('/judge/judgeDashboard', [UserManagementController::class, 'judgeDashboard'])->name('judge.judge_dashboard');
+    Route::get('/judge/semifinalsDashboard', [UserManagementController::class, 'semifinalsDashboard'])->name('judge.semi_finals_dash');
+    Route::get('/judge/swim-suit-table', [UserManagementController::class, 'swimSuitTable'])->name('judge.swim_suit_table');
+    Route::get('/judge/edit_score', [UserManagementController::class, 'EditScoreDash'])->name('judge.edit_score');
+    Route::get('/judge/gown-table', [UserManagementController::class, 'gownTable'])->name('judge.gown_table');
+    Route::get('/judge/finalsDashboard', [UserManagementController::class, 'finalsDashboard'])->name('judge.finals_dash');
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    // Scores Routes
+    Route::post('/pre-interview-scores', [UserManagementController::class, 'storePreInterviewScore'])->name('pre-interview-scores.store');
+    Route::post('/swim-suit-scores', [UserManagementController::class, 'storeSwimSuitScore'])->name('swim-suit-scores.store');
+    Route::post('gown-scores', [UserManagementController::class, 'storeGownScore'])->name('gown-scores.store');
+    Route::get('/pre-interview-scores', [UserManagementController::class, 'getPreInterviewScores']);
+    Route::post('/semi-final-scores', [UserManagementController::class, 'storeSemiFinalScore'])->name('semi-final-scores.store');
+    Route::post('/final-scores', [UserManagementController::class, 'storeFinalScore'])->name('final-scores.store');
+});

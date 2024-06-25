@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('username')->unique();
-            $table->string('password');
-            $table->string('role')->default('judge'); // Set default role to 'judge'
+            $table->string('name');
+            $table->enum('role', ['admin', 'judge_prelim', 'judge_gown', 'judge_semi', 'judge_final'])->default('judge_prelim');
+            $table->string('unique_code')->nullable()->unique(); // Allow unique_code to be nullable and unique
             $table->timestamps();
-        });        
+        });
     }
 
     /**
