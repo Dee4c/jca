@@ -348,58 +348,59 @@
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo-details">
-            <div class="logo_name">Miss Q</div>
-        </div>
-        <ul class="nav-list">
-            <li>
-                <a href="{{route('usermanage.dashboard')}}">
-                    <i class='bx bx-user'></i>
-                    <span class="links_name">User Management</span>
-                </a>
-                <span class="tooltip">User Management</span>
-            </li>
-            <li>
-                <a href="{{route('usermanage.candidate_dash')}}">
-                    <i class='bx bxs-user-check'></i>
-                    <span class="links_name">Candidates</span>
-                </a>
-                <span class="tooltip">Candidate Management</span>
-            </li>
-            <li>
-                <a href="{{route('usermanage.preliminary_dash')}}">
-                    <i class='bx bx-edit'></i>
-                    <span class="links_name">Preliminaries</span>
-                </a>
-            </li>        
-            <li>
-                <a href="{{route('usermanage.semi_final_dash')}}">
-                    <i class='bx bx-line-chart'></i>
-                    <span class="links_name">Semi-Finals</span>
-                </a>
-                <span class="tooltip">Semi-Finals</span>
-            </li>
-            <li>
-                <a href="{{route('usermanage.final_dash')}}">
-                    <i class='bx bxs-crown'></i>
-                    <span class="links_name">Finals</span>
-                </a>
-                <span class="tooltip">Finals</span>
-            </li>
-            <li class="profile">
-                <div class="profile-details">
-                    <img src="profile.jpg" alt="profileImg">
-                    <div class="name_job">
-                        <div class="name">Admin</div>
-                    </div>
-                </div>
-                <a href="{{ route('logout') }}" class="logout-link">
-                    <i class='bx bx-log-out' id="log_out"></i>
-                </a>
-            </li>
-        </ul>
+<div class="sidebar">
+    <div class="logo-details">
+        <div class="logo_name">Miss Q</div>
     </div>
+    <ul class="nav-list">
+        <li>
+            <a href="{{route('usermanage.dashboard')}}">
+                <i class='bx bx-user'></i>
+                <span class="links_name">User Management</span>
+            </a>
+            <span class="tooltip">User Management</span>
+        </li>
+        <li>
+            <a href="{{route('usermanage.candidate_dash')}}">
+                <i class='bx bxs-user-check'></i>
+                <span class="links_name">Candidates</span>
+            </a>
+            <span class="tooltip">Candidate Management</span>
+        </li>
+        <li>
+            <a href="{{route('usermanage.preliminary_dash')}}">
+                <i class='bx bx-edit'></i>
+                <span class="links_name">Preliminaries</span>
+            </a>
+        </li>        
+        <li>
+            <a href="{{route('usermanage.semi_final_dash')}}">
+                <i class='bx bx-line-chart'></i>
+                <span class="links_name">Semi-Finals</span>
+            </a>
+            <span class="tooltip">Semi-Finals</span>
+        </li>
+        <li>
+            <a href="{{route('usermanage.final_dash')}}">
+                <i class='bx bxs-crown'></i>
+                <span class="links_name">Finals</span>
+            </a>
+            <span class="tooltip">Finals</span>
+        </li>
+        <li class="profile">
+            <div class="profile-details">
+                <img src="profile.jpg" alt="profileImg">
+                <div class="name_job">
+                    <div class="name">Admin</div>
+                </div>
+            </div>
+            <a href="{{ route('logout') }}" class="logout-link">
+                <i class='bx bx-log-out' id="log_out"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
 <div class="content">
     <div class="container">
         @if (session('error'))
@@ -408,10 +409,10 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <h1 class="title-id">Semi-Finals Table</h1>
+        <h1 class="title-id">Finals Table</h1>
         <br>
 
-        <!-- Table to display semi-finalists -->
+        <!-- Table to display finalists -->
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -471,6 +472,7 @@
         submitBtn.disabled = true;
     });
 </script>
+
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

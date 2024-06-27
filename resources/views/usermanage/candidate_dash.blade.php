@@ -352,59 +352,58 @@
     </style>
 </head>
 <body>
-<div class="sidebar">
-    <div class="logo-details">
-        <div class="logo_name">Miss Q</div>
-    </div>
-    <ul class="nav-list">
-        <li>
-            <a href="{{route('usermanage.dashboard')}}">
-                <i class='bx bx-user'></i>
-                <span class="links_name">User Management</span>
-            </a>
-            <span class="tooltip">User Management</span>
-        </li>
-        <li>
-            <a href="{{ route('usermanage.candidate_dash')}}">
-                <i class='bx bxs-user-check'></i>
-                <span class="links_name">Candidates</span>
-            </a>
-            <span class="tooltip">Candidate Management</span>
-        </li>
-        <li>
-            <a href="{{ route('usermanage.preliminary_dash')}}">
-                <i class='bx bx-edit'></i>
-                <span class="links_name">Preliminaries</span>
-            </a>
-            <span class="tooltip">Preliminaries</span>
-        </li>
-        <li>
-            <a href="{{route('usermanage.semi_final_dash')}}">
-                <i class='bx bx-line-chart'></i>
-                <span class="links_name">Semi-Finals</span>
-            </a>
-            <span class="tooltip">Semi-Finals</span>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-crown'></i>
-                <span class="links_name">Finals</span>
-            </a>
-            <span class="tooltip">Finals</span>
-        </li>
-        <li class="profile">
-            <div class="profile-details">
-                <img src="profile.jpg" alt="profileImg">
-                <div class="name_job">
-                    <div class="name">Admin</div>
+    <div class="sidebar">
+        <div class="logo-details">
+            <div class="logo_name">Miss Q</div>
+        </div>
+        <ul class="nav-list">
+            <li>
+                <a href="{{route('usermanage.dashboard')}}">
+                    <i class='bx bx-user'></i>
+                    <span class="links_name">User Management</span>
+                </a>
+                <span class="tooltip">User Management</span>
+            </li>
+            <li>
+                <a href="{{route('usermanage.candidate_dash')}}">
+                    <i class='bx bxs-user-check'></i>
+                    <span class="links_name">Candidates</span>
+                </a>
+                <span class="tooltip">Candidate Management</span>
+            </li>
+            <li>
+                <a href="{{route('usermanage.preliminary_dash')}}">
+                    <i class='bx bx-edit'></i>
+                    <span class="links_name">Preliminaries</span>
+                </a>
+            </li>        
+            <li>
+                <a href="{{route('usermanage.semi_final_dash')}}">
+                    <i class='bx bx-line-chart'></i>
+                    <span class="links_name">Semi-Finals</span>
+                </a>
+                <span class="tooltip">Semi-Finals</span>
+            </li>
+            <li>
+                <a href="{{route('usermanage.final_dash')}}">
+                    <i class='bx bxs-crown'></i>
+                    <span class="links_name">Finals</span>
+                </a>
+                <span class="tooltip">Finals</span>
+            </li>
+            <li class="profile">
+                <div class="profile-details">
+                    <img src="profile.jpg" alt="profileImg">
+                    <div class="name_job">
+                        <div class="name">Admin</div>
+                    </div>
                 </div>
-            </div>
-            <a href="{{ route('logout') }}" class="logout-link">
-                <i class='bx bx-log-out' id="log_out"></i>
-            </a>
-        </li>
-    </ul>
-</div>
+                <a href="{{ route('logout') }}" class="logout-link">
+                    <i class='bx bx-log-out' id="log_out"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
 <div class="content">
     <div class="container">
         <h1 class="title-id">CANDIDATE MANAGEMENT</h1>

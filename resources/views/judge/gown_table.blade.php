@@ -313,197 +313,199 @@
             display: none; 
         }
        
+        h2 {
+            color:white;
+        }
+        
     </style>
 </head>
 <body>
-<div class="sidebar">
-    <div class="logo-details">
-        <div class="logo_name">Miss Q</div>
-    </div>
-    <ul class="nav-list">
-        <li class="dropdown">
-            <a href="#">
-                <i class='bx bx-user'></i>
-                <span class="links_name">PRELIMINARIES</span>
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('judge.semi_finals_dash') }}">
-                <i class='bx bxs-user-check'></i>
-                <span class="links_name">SEMI-FINALS</span>
-            </a>
-            <span class="tooltip">SEMI-FINALS</span>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bx-edit'></i>
-                <span class="links_name">FINALS</span>
-            </a>
-            <span class="tooltip">FINALS</span>
-        </li>
-        <li class="profile">
-            <div class="profile-details">
-                <img src="profile.jpg" alt="profileImg">
-                <div class="name_job">
-                    <div class="name">{{ Session::get('userName') }}</div> <!-- Display user's name from session -->
+    <div class="sidebar">
+        <div class="logo-details">
+            <div class="logo_name">Miss Q</div>
+        </div>
+        <ul class="nav-list">
+            @if (Session::has('loginId'))
+                @php
+                    $user = App\Models\User::find(Session::get('loginId'));
+                @endphp
+                @if ($user)
+                    @if (in_array($user->role, ['admin', 'judge_prelim']))
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class='bx bx-user'></i>
+                            <span class="links_name">PRELIMINARIES</span>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            @if ($user->role == 'judge_prelim')
+                            <li><a class="dropdown-item" href="{{ route('judge.judge_dashboard') }}">Pre-Interview</a></li>
+                            <li><a class="dropdown-item" href="{{ route('judge.swim_suit_table') }}">Swim-Suit</a></li>
+                            @endif
+                        </ul>
+                    </li>
+                    @endif
+                    @if (in_array($user->role, ['admin', 'judge_semi']))
+                    <li>
+                        <a href="{{ route('judge.semi_finals_dash') }}">
+                            <i class='bx bxs-user-check'></i>
+                            <span class="links_name">SEMI-FINALS</span>
+                        </a>
+                        <span class="tooltip">SEMI-FINALS</span>
+                    </li>
+                    @endif
+                    @if (in_array($user->role, ['admin', 'judge_final']))
+                    <li>
+                        <a href="#">
+                            <i class='bx bx-edit'></i>
+                            <span class="links_name">FINALS</span>
+                        </a>
+                        <span class="tooltip">FINALS</span>
+                    </li>
+                    @endif
+                @endif
+            @endif
+            <li class="profile">
+                <div class="profile-details">
+                    <img src="profile.jpg" alt="profileImg">
+                    <div class="name_job">
+                        <div class="name">{{ Session::get('userName') }}</div> <!-- Display user's name from session -->
+                    </div>
                 </div>
+                <a href="{{ route('logout') }}" class="logout-link">
+                    <i class='bx bx-log-out' id="log_out"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <div class="container">
+            @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <a href="{{ route('logout') }}" class="logout-link">
-                <i class='bx bx-log-out' id="log_out"></i>
-            </a>
-        </li>
-    </ul>
-</div>
-
-     <div class="content">
-    <div class="container">
-        @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        @endif
-   
-        <h1 class="title-id">PRELIMINARY TABLE</h1>
-        <div class="dropdown">
-            <select class="form-select" id="categorySelect">
-                <option value="">Select Category</option>
-                <option value="gown">Gown</option>
-            </select>
-        </div>
-        <br>
-
-        <!-- Gown Form -->
-        <div id="gown_table" class="category-table-gown" style="display: none;">
-            <form id="gown_form" action="{{ route('gown-scores.store') }}" method="POST">
-                @csrf
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Candidate Number</th>
-                            <th>Suitability (Score: 75-100)</th>
-                            <th>Poise, Grace and Projection (Score: 75-100)</th>
-                            <th>Total Score</th>
-                            <th>Rank</th>
-                        </tr>
-                    </thead>
-                    <tbody id="gown_table_body">
-                        @foreach($candidates as $candidate)
-                        <tr>
-                            <td>{{ $candidate->candidateNumber }}</td>
-                            <td>
-                                <input type="number" name="suitability[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
-                                value="{{ $submittedScores[$candidate->candidateNumber]['suitability'] ?? '' }}" 
-                                onchange="calculateTotalScore({{ $candidate->id }})">
-                            </td>
-                            <td>
-                                <input type="number" name="poise_grace_projection[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
-                                value="{{ $submittedScores[$candidate->candidateNumber]['poise_grace_projection'] ?? '' }}" 
-                                onchange="calculateTotalScore({{ $candidate->id }})">
-                            </td>
-                            <td>
-                                <input type="text" name="total_score[]" id="totalScore_{{ $candidate->id }}" readonly 
-                                value="{{ $submittedScores[$candidate->candidateNumber]['total'] ?? '' }}">
-                            </td>
-                            <td>
-                                <input type="text" name="rank[]" id="rank_{{ $candidate->id }}" readonly 
-                                value="{{ $submittedScores[$candidate->candidateNumber]['rank'] ?? '' }}">
-                            </td>
-                            <input type="hidden" name="judge_name[]" value="{{ Session::get('userName') }}">
-                            <input type="hidden" name="candidate_number[]" value="{{ $candidate->candidateNumber }}">
-                            <input type="hidden" name="candidate_rank[]" id="candidate_rank_{{ $candidate->id }}">
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                <button type="submit" class="btn btn-primary" id="submitButton" @if(!empty($submittedScores)) disabled @endif>Submit</button>
-                <button type="button" class="btn btn-secondary" id="editButton" onclick="gownEnableEditing()">@if(!empty($submittedScores)) Edit Scores @else Cancel Edit @endif</button>
-            </form>
+            @endif
+       
+            <h1 class="title-id">PRELIMINARY TABLE</h1>
+            <br>
+            <h2>Gown Table</h2>
+            <br>
+            <!-- Gown Form -->
+            <div id="gown_table" class="category-table-gown">
+                <form id="gown_form" action="{{ route('gown-scores.store') }}" method="POST">
+                    @csrf
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Candidate Number</th>
+                                <th>Suitability (Score: 75-100)</th>
+                                <th>Poise, Grace and Projection (Score: 75-100)</th>
+                                <th>Total Score</th>
+                                <th>Rank</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gown_table_body">
+                            @foreach($candidates as $candidate)
+                            <tr>
+                                <td>{{ $candidate->candidateNumber }}</td>
+                                <td>
+                                    <input type="number" name="suitability[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
+                                    value="{{ $submittedScores[$candidate->candidateNumber]['suitability'] ?? '' }}" 
+                                    onchange="calculateTotalScore({{ $candidate->id }})">
+                                </td>
+                                <td>
+                                    <input type="number" name="poise_grace_projection[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
+                                    value="{{ $submittedScores[$candidate->candidateNumber]['poise_grace_projection'] ?? '' }}" 
+                                    onchange="calculateTotalScore({{ $candidate->id }})">
+                                </td>
+                                <td>
+                                    <input type="text" name="total_score[]" id="totalScore_{{ $candidate->id }}" readonly 
+                                    value="{{ $submittedScores[$candidate->candidateNumber]['total'] ?? '' }}">
+                                </td>
+                                <td>
+                                    <input type="text" name="rank[]" id="rank_{{ $candidate->id }}" readonly 
+                                    value="{{ $submittedScores[$candidate->candidateNumber]['rank'] ?? '' }}">
+                                </td>
+                                <input type="hidden" name="judge_name[]" value="{{ Session::get('userName') }}">
+                                <input type="hidden" name="candidate_number[]" value="{{ $candidate->candidateNumber }}">
+                                <input type="hidden" name="candidate_rank[]" id="candidate_rank_{{ $candidate->id }}">
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-primary" id="submitButton" @if(!empty($submittedScores)) disabled @endif>Submit</button>
+                    <button type="button" class="btn btn-secondary" id="editButton" onclick="gownEnableEditing()">@if(!empty($submittedScores)) Edit Scores @else Cancel Edit @endif</button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-
-<script>
-    // Function to calculate the total score and rank for gown category
-    function calculateTotalScore(candidateId) {
-        var suitabilityScore = parseInt(document.querySelector('input[name="suitability[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
-        var poiseGraceProjectionScore = parseInt(document.querySelector('input[name="poise_grace_projection[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
-        var totalScore = (suitabilityScore + poiseGraceProjectionScore) / 2; // Calculate the average
-        document.getElementById("totalScore_" + candidateId).value = totalScore.toFixed(2); // Display total score
-        updateRank(); // Update ranks after calculating total score
-    }
-
-    // Function to update the rank for gown category
-    function updateRank() {
-        var totalScores = [];
-        document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
-            var score = parseFloat(scoreInput.value);
-            totalScores.push(score);
-        });
-
-        totalScores.sort(function(a, b) {
-            return b - a;
-        });
-
-        var rank = 1;
-        var prevScore = null;
-        totalScores.forEach(function(score) {
-            if (score !== prevScore) {
-                var rankCount = 0;
-                document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
-                    if (parseFloat(scoreInput.value) === score) {
-                        rankCount++;
-                    }
-                });
-
-                var currentRank = rank;
-                document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
-                    if (parseFloat(scoreInput.value) === score) {
-                        var candidateId = scoreInput.id.split("_")[1];
-                        var rankInput = document.getElementById("rank_" + candidateId);
-                        rankInput.value = currentRank;
-                    }
-                });
-
-                rank += rankCount;
-            }
-            prevScore = score;
-        });
-    }
-
-    // Event listener for category selection change
-    document.getElementById('categorySelect').addEventListener('change', function() {
-        var selectedCategory = this.value;
-        document.querySelectorAll('.category-table').forEach(function(table) {
-            table.style.display = 'none';
-        });
-        if (selectedCategory !== '') {
-            document.getElementById(selectedCategory + '_table').style.display = 'block';
-            if (selectedCategory === 'gown') {
-                document.getElementById('gown_table').style.display = 'table';
-            } else {
-                document.getElementById('gown_table').style.display = 'none';
-            }
+    
+    <script>
+        // Function to calculate the total score and rank for gown category
+        function calculateTotalScore(candidateId) {
+            var suitabilityScore = parseInt(document.querySelector('input[name="suitability[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
+            var poiseGraceProjectionScore = parseInt(document.querySelector('input[name="poise_grace_projection[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
+            var totalScore = (suitabilityScore + poiseGraceProjectionScore) / 2; // Calculate the average
+            document.getElementById("totalScore_" + candidateId).value = totalScore.toFixed(2); // Display total score
+            updateRank(); // Update ranks after calculating total score
         }
-    });
-
-    // Call calculateTotalScore for initial calculation in gown category
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('input[name^="suitability"], input[name^="poise_grace_projection"]').forEach(function(input) {
-            var candidateId = input.dataset.candidateId;
-            calculateTotalScore(candidateId);
+    
+        // Function to update the rank for gown category
+        function updateRank() {
+            var totalScores = [];
+            document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
+                var score = parseFloat(scoreInput.value);
+                totalScores.push(score);
+            });
+    
+            totalScores.sort(function(a, b) {
+                return b - a;
+            });
+    
+            var rank = 1;
+            var prevScore = null;
+            totalScores.forEach(function(score) {
+                if (score !== prevScore) {
+                    var rankCount = 0;
+                    document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
+                        if (parseFloat(scoreInput.value) === score) {
+                            rankCount++;
+                        }
+                    });
+    
+                    var currentRank = rank;
+                    document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
+                        if (parseFloat(scoreInput.value) === score) {
+                            var candidateId = scoreInput.id.split("_")[1];
+                            var rankInput = document.getElementById("rank_" + candidateId);
+                            rankInput.value = currentRank;
+                        }
+                    });
+    
+                    rank += rankCount;
+                }
+                prevScore = score;
+            });
+        }
+    
+        // Call calculateTotalScore for initial calculation in gown category
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[name^="suitability"], input[name^="poise_grace_projection"]').forEach(function(input) {
+                var candidateId = input.dataset.candidateId;
+                calculateTotalScore(candidateId);
+            });
         });
-    });
-
-    // Function to enable editing of scores
-    function gownEnableEditing() {
-        document.querySelectorAll('input[name^="suitability"], input[name^="poise_grace_projection"]').forEach(function(input) {
-            input.removeAttribute('readonly');
-        });
-        document.getElementById('submitButton').removeAttribute('disabled');
-    }
-</script>
-
+    
+        // Function to enable editing of scores
+        function gownEnableEditing() {
+            document.querySelectorAll('input[name^="suitability"], input[name^="poise_grace_projection"]').forEach(function(input) {
+                input.removeAttribute('readonly');
+            });
+            document.getElementById('submitButton').removeAttribute('disabled');
+        }
+    </script>
+    
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </html>

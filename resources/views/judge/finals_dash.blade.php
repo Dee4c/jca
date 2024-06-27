@@ -306,197 +306,190 @@
         width: 200px; /* Adjust the width as needed */
     }
 
-
+    h2 {
+        color:white;
+    }
    
 </style>
 </head>
 <body>
-<div class="sidebar">
-    <div class="logo-details">
-        <div class="logo_name">Miss Q</div>
-    </div>
-    <ul class="nav-list">
-        <li class="dropdown">
-            <a href="#">
-                <i class='bx bx-user'></i>
-                <span class="links_name">PRELIMINARIES</span>
-            </a>
-        </li>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            </ul>
-        </li>
-        <li>
-            <a href="{{ route('judge.semi_finals_dash') }}">
-                <i class='bx bxs-user-check'></i>
-                <span class="links_name">SEMI-FINALS</span>
-            </a>
-            <span class="tooltip">SEMI-FINALS</span>
-        </li>
-        <li>
-            <a href="{{ route('judge.finals_dash') }}">
-                <i class='bx bx-edit'></i>
-                <span class="links_name">FINALS</span>
-            </a>
-            <span class="tooltip">FINALS</span>
-        </li>
-        <li class="profile">
-            <div class="profile-details">
-                <img src="profile.jpg" alt="profileImg">
-                <div class="name_job">
-                    <div class="name">{{ Session::get('userName') }}</div> <!-- Display user's name from session -->
-                </div>
-            </div>
-            <a href="{{ route('logout') }}" class="logout-link">
-                <i class='bx bx-log-out' id="log_out"></i>
-            </a>
-        </li>
-    </ul>
-</div>
-
-<div class="content">
-    <div class="container">
-        <h1 class="title-id">FINAL TABLE</h1>
-        <div class="dropdown">
-            <select class="form-select" id="categorySelect">
-                <option value="">Select Category</option>
-                <option value="final">Finals</option>
-                <!-- Add other categories as needed -->
-            </select>
+    <div class="sidebar">
+        <div class="logo-details">
+            <div class="logo_name">Miss Q</div>
         </div>
-        <br>
-
-        <!-- Finals Form -->
-        <form id="final_form" action="{{ route('final-scores.store') }}" method="POST">
-            @csrf
-            <div id="final_table" class="category-table" style="display: none;">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Candidate Number</th>
-                            <th>Beauty of Face and Figure (Score: 75-100)</th>
-                            <th>Poise, Grace and Projection (Score: 75-100)</th>
-                            <th>Composure during Interview (Score: 75-100)</th>
-                            <th>Total Score</th>
-                            <th>Rank</th>
-                        </tr>
-                    </thead>
-                    <tbody id="final_table_body">
-                        @foreach($candidates as $candidate)
-                        <tr>
-                            <td>{{ $candidate->candidate_number }}</td>
-                            <td>
-                                <input type="number" name="beauty_of_face[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
-                                    value="{{ $submittedScores[$candidate->candidate_number]['beauty_of_face'] ?? '' }}" 
-                                    onchange="calculateTotalScore({{ $candidate->id }})">
-                            </td>
-                            <td>
-                                <input type="number" name="poise_grace_projection[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
-                                    value="{{ $submittedScores[$candidate->candidate_number]['poise_grace_projection'] ?? '' }}" 
-                                    onchange="calculateTotalScore({{ $candidate->id }})">
-                            </td>
-                            <td>
-                                <input type="number" name="composure[]" data-candidate-id="{{ $candidate->id }}" min="75" max="100" required 
-                                    value="{{ $submittedScores[$candidate->candidate_number]['composure'] ?? '' }}" 
-                                    onchange="calculateTotalScore({{ $candidate->id }})">
-                            </td>
-                            <td>
-                                <input type="text" name="total_score[]" id="totalScore_{{ $candidate->id }}" readonly 
-                                    value="{{ $submittedScores[$candidate->candidate_number]['total'] ?? '' }}">
-                            </td>
-                            <td>
-                                <input type="text" name="rank[]" id="rank_{{ $candidate->id }}" readonly 
-                                    value="{{ $submittedScores[$candidate->candidate_number]['rank'] ?? '' }}">
-                            </td>
-                            <input type="hidden" name="judge_name[]" value="{{ Session::get('userName') }}">
-                            <input type="hidden" name="candidate_number[]" value="{{ $candidate->candidate_number }}">
-                            <input type="hidden" name="candidate_rank[]" id="candidate_rank_{{ $candidate->id }}">
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                <button type="submit" class="btn btn-primary" id="submitButton" @if(!empty($submittedScores)) disabled @endif>Submit</button>
-                <button type="button" class="btn btn-secondary" id="editButton" onclick="enableEditing()">@if(!empty($submittedScores)) Edit Scores @else Cancel Edit @endif</button>
-            </div>
-        </form>
+        <ul class="nav-list">
+            @if (Session::has('loginId'))
+                @php
+                    $user = App\Models\User::find(Session::get('loginId'));
+                @endphp
+                @if ($user)
+                    @if (in_array($user->role, ['admin', 'judge_prelim']))
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class='bx bx-user'></i>
+                            <span class="links_name">PRELIMINARIES</span>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            @if ($user->role == 'judge_prelim')
+                            <li><a class="dropdown-item" href="{{ route('judge.judge_dashboard') }}">Pre-Interview</a></li>
+                            <li><a class="dropdown-item" href="{{ route('judge.swim_suit_table') }}">Swim-Suit</a></li>
+                            @endif
+                        </ul>
+                    </li>
+                    @endif
+                    @if (in_array($user->role, ['admin', 'judge_semi']))
+                    <li>
+                        <a href="{{ route('judge.semi_finals_dash') }}">
+                            <i class='bx bxs-user-check'></i>
+                            <span class="links_name">SEMI-FINALS</span>
+                        </a>
+                        <span class="tooltip">SEMI-FINALS</span>
+                    </li>
+                    @endif
+                    @if (in_array($user->role, ['admin', 'judge_final']))
+                    <li>
+                        <a href="{{ route('judge.finals_dash')}}">
+                            <i class='bx bx-edit'></i>
+                            <span class="links_name">FINALS</span>
+                        </a>
+                        <span class="tooltip">FINALS</span>
+                    </li>
+                    @endif
+                @endif
+            @endif
+            <li class="profile">
+                <div class="profile-details">
+                    <img src="profile.jpg" alt="profileImg">
+                    <div class="name_job">
+                        <div class="name">{{ Session::get('userName') }}</div> <!-- Display user's name from session -->
+                    </div>
+                </div>
+                <a href="{{ route('logout') }}" class="logout-link">
+                    <i class='bx bx-log-out' id="log_out"></i>
+                </a>
+            </li>
+        </ul>
     </div>
-</div>
 
-<script>
-    // Function to calculate the total score and rank for finals category
-    function calculateTotalScore(candidateId) {
-        var beautyOfFaceScore = parseInt(document.querySelector('input[name="beauty_of_face[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
-        var poiseGraceProjectionScore = parseInt(document.querySelector('input[name="poise_grace_projection[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
-        var composureScore = parseInt(document.querySelector('input[name="composure[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
-        var totalScore = (beautyOfFaceScore + poiseGraceProjectionScore + composureScore) / 3; // Calculate the average
-        document.getElementById("totalScore_" + candidateId).value = totalScore.toFixed(2); // Display total score
-        updateRank(); // Update ranks after calculating total score
-    }
-
-    // Function to update the rank for finals category
-    function updateRank() {
-        var totalScores = [];
-        document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
-            var score = parseFloat(scoreInput.value);
-            totalScores.push(score);
-        });
-
-        totalScores.sort(function(a, b) {
-            return b - a;
-        });
-
-        var rank = 1;
-        var prevScore = null;
-        totalScores.forEach(function(score) {
-            if (score !== prevScore) {
-                var rankCount = 0;
-                document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
-                    if (parseFloat(scoreInput.value) === score) {
-                        rankCount++;
-                    }
-                });
-
-                var currentRank = rank;
-                document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
-                    if (parseFloat(scoreInput.value) === score) {
-                        var candidateId = scoreInput.id.split("_")[1];
-                        var rankInput = document.getElementById("rank_" + candidateId);
-                        rankInput.value = currentRank;
-                    }
-                });
-
-                rank += rankCount;
-            }
-            prevScore = score;
-        });
-    }
-
-    // Event listener for category selection change
-    document.getElementById('categorySelect').addEventListener('change', function() {
-        var selectedCategory = this.value;
-        document.querySelectorAll('.category-table').forEach(function(table) {
-            table.style.display = 'none';
-        });
-        if (selectedCategory === 'final') {
-            document.getElementById('final_table').style.display = 'table';
+    <div class="content">
+        <div class="container">
+            <h1 class="title-id">FINALS TABLE</h1>
+            <br>
+            <h2>Finals</h2>
+            <br>
+            <!-- Finals Form -->
+            <form id="final_form" action="{{ route('final-scores.store') }}" method="POST">
+                @csrf
+                <div id="final_table" class="category-table">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Candidate Number</th>
+                                <th>Beauty of Face and Figure (Score: 50%)</th>
+                                <th>Poise, Grace and Projection (Score: 35%)</th>
+                                <th>Composure during Interview (Score: 15%)</th>
+                                <th>Total Score</th>
+                                <th>Rank</th>
+                            </tr>
+                        </thead>
+                        <tbody id="final_table_body">
+                            @foreach($candidates as $candidate)
+                            <tr>
+                                <td>{{ $candidate->candidate_number }}</td>
+                                <td>
+                                    <input type="number" name="beauty_of_face[]" data-candidate-id="{{ $candidate->id }}" min="0" max="50" required 
+                                        value="{{ $submittedScores[$candidate->candidate_number]['beauty_of_face'] ?? '' }}" 
+                                        onchange="calculateTotalScore({{ $candidate->id }})">
+                                </td>
+                                <td>
+                                    <input type="number" name="poise_grace_projection[]" data-candidate-id="{{ $candidate->id }}" min="0" max="35" required 
+                                        value="{{ $submittedScores[$candidate->candidate_number]['poise_grace_projection'] ?? '' }}" 
+                                        onchange="calculateTotalScore({{ $candidate->id }})">
+                                </td>
+                                <td>
+                                    <input type="number" name="composure[]" data-candidate-id="{{ $candidate->id }}" min="0" max="15" required 
+                                        value="{{ $submittedScores[$candidate->candidate_number]['composure'] ?? '' }}" 
+                                        onchange="calculateTotalScore({{ $candidate->id }})">
+                                </td>
+                                <td>
+                                    <input type="text" name="total_score[]" id="totalScore_{{ $candidate->id }}" readonly 
+                                        value="{{ $submittedScores[$candidate->candidate_number]['total'] ?? '' }}">
+                                </td>
+                                <td>
+                                    <input type="text" name="rank[]" id="rank_{{ $candidate->id }}" readonly 
+                                        value="{{ $submittedScores[$candidate->candidate_number]['rank'] ?? '' }}">
+                                </td>
+                                <input type="hidden" name="judge_name[]" value="{{ Session::get('userName') }}">
+                                <input type="hidden" name="candidate_number[]" value="{{ $candidate->candidate_number }}">
+                                <input type="hidden" name="candidate_rank[]" id="candidate_rank_{{ $candidate->id }}">
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-primary" id="submitButton" @if(!empty($submittedScores)) disabled @endif>Submit</button>
+                    <button type="button" class="btn btn-secondary" id="editButton" onclick="enableEditing()">@if(!empty($submittedScores)) Edit Scores @else Cancel Edit @endif</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Function to calculate the total score and rank for finals category
+        function calculateTotalScore(candidateId) {
+            var beautyOfFaceScore = parseInt(document.querySelector('input[name="beauty_of_face[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
+            var poiseGraceProjectionScore = parseInt(document.querySelector('input[name="poise_grace_projection[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
+            var composureScore = parseInt(document.querySelector('input[name="composure[]"][data-candidate-id="' + candidateId + '"]').value) || 0;
+            var totalScore = (beautyOfFaceScore + poiseGraceProjectionScore + composureScore); // Sum of scores
+    
+            document.getElementById("totalScore_" + candidateId).value = totalScore.toFixed(2); // Display total score
+            updateRank(); // Update ranks after calculating total score
         }
-    });
-
-    // Call calculateTotalScore for initial calculation in finals category
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('input[name^="beauty_of_face"], input[name^="poise_grace_projection"], input[name^="composure"]').forEach(function(input) {
-            var candidateId = input.dataset.candidateId;
-            calculateTotalScore(candidateId);
+    
+        // Function to update the rank for finals category
+        function updateRank() {
+            var totalScores = [];
+            var candidateIds = [];
+    
+            document.querySelectorAll('input[name^="total_score"]').forEach(function(scoreInput) {
+                var score = parseFloat(scoreInput.value);
+                totalScores.push(score);
+    
+                var candidateId = scoreInput.id.split("_")[1];
+                candidateIds.push({
+                    id: candidateId,
+                    score: score
+                });
+            });
+    
+            candidateIds.sort(function(a, b) {
+                return b.score - a.score;
+            });
+    
+            var rank = 1;
+            candidateIds.forEach(function(candidate) {
+                var candidateId = candidate.id;
+                var rankInput = document.getElementById("rank_" + candidateId);
+                rankInput.value = rank;
+                rank++;
+            });
+        }
+    
+        // Call calculateTotalScore for initial calculation in finals category
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[name^="beauty_of_face"], input[name^="poise_grace_projection"], input[name^="composure"]').forEach(function(input) {
+                var candidateId = input.dataset.candidateId;
+                calculateTotalScore(candidateId);
+            });
         });
-    });
-
-    // Function to enable editing of scores
-    function enableEditing() {
-        document.querySelectorAll('input[name^="beauty_of_face"], input[name^="poise_grace_projection"], input[name^="composure"]').forEach(function(input) {
-            input.removeAttribute('readonly');
-        });
-        document.getElementById('submitButton').removeAttribute('disabled');
-    }
-</script>
+    
+        // Function to enable editing of scores
+        function enableEditing() {
+            document.querySelectorAll('input[name^="beauty_of_face"], input[name^="poise_grace_projection"], input[name^="composure"]').forEach(function(input) {
+                input.removeAttribute('readonly');
+            });
+            document.getElementById('submitButton').removeAttribute('disabled');
+        }
+    </script>
 
 </body>
 </html>

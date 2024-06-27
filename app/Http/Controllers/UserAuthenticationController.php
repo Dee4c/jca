@@ -23,9 +23,9 @@ class UserAuthenticationController extends Controller
                     case 'judge_gown':
                         return redirect()->route('judge.gown_table');
                     case 'judge_semi':
-                            return redirect()->route('judge.semi_finals_dash');
+                        return redirect()->route('judge.semi_finals_dash');
                     case 'judge_final':
-                            return redirect()->route('judge.finals_dash');
+                        return redirect()->route('judge.finals_dash');
                 }
             }
         }

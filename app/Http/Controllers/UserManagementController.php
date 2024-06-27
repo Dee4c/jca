@@ -244,19 +244,19 @@ class UserManagementController extends Controller
         return view('judge.judge_dashboard', compact('candidates', 'submittedScores')); 
     }
     
-        public function semifinalsDashboard()
+    public function semifinalsDashboard()
     {
-        $candidates = TopCandidates::orderBy('candidate_number')->limit(8)->get();
+        $TopCandidates = TopCandidates::orderBy('candidate_number')->limit(8)->get();
 
-         // Fetch submitted scores for the current judge
-         $judgeName = Session::get('userName');
-         $submittedScores = SemiFinalScore::where('judge_name', $judgeName)
-             ->get()
-             ->keyBy('candidate_number')
-             ->toArray();
+        // Fetch submitted scores for the current judge
+        $judgeName = Session::get('userName');
+        $submittedScores = SemiFinalScore::where('judge_name', $judgeName)
+            ->get()
+            ->keyBy('candidate_number')
+            ->toArray();
         
         // Pass candidate data to the view
-        return view('judge.semi_finals_dash', compact ('candidates','submittedScores'));
+        return view('judge.semi_finals_dash', compact('TopCandidates', 'submittedScores'));
     }
 
     public function storePreInterviewScore(Request $request)
@@ -535,34 +535,38 @@ class UserManagementController extends Controller
         public function SemiFinalDash()
         {
             try {
-                // Fetch top 8 candidates
-                $topCandidates = DB::table('semi_final_scores')
-                                    ->select('candidate_number')
-                                    ->groupBy('candidate_number')
-                                    ->orderBy('candidate_number')
-                                    ->limit(8)
-                                    ->get();
-
-                // Calculate total rank based on judges' scores
-                foreach ($topCandidates as $candidate) {
-                    $candidate->total_rank = DB::table('semi_final_scores')
-                                                ->where('candidate_number', $candidate->candidate_number)
-                                                ->sum('rank');
-                }
-
-                // Assign overall rank based on total rank
-                $topCandidates = $topCandidates->sortBy('total_rank')->values();
+                // Fetch all top candidates with their ranks
+                $topCandidates = SemiFinalScore::select('candidate_number')
+                    ->selectRaw('SUM(rank) AS total_rank')
+                    ->groupBy('candidate_number')
+                    ->orderBy('total_rank')
+                    ->limit(8)
+                    ->get();
+        
+                // Assign overall rank based on the sorted total ranks
                 $rank = 1;
                 foreach ($topCandidates as $candidate) {
                     $candidate->overall_rank = $rank++;
                 }
-
-                // Pass data to the view
-                return view('usermanage.semi_final_dash', compact('topCandidates'));
+        
+                // Check if top 4 finalists have already been submitted
+                $isSubmitted = FinalistCandidates::count() >= 4;
+        
+                // Fetch submitted scores for the current judge (if needed)
+                // Example usage:
+                // $judgeName = Session::get('userName');
+                // $submittedScores = SemiFinalScore::where('judge_name', $judgeName)
+                //     ->get()
+                //     ->keyBy('candidate_number')
+                //     ->toArray();
+        
+                // Pass candidate data and submission status to the view
+                return view('usermanage.semi_final_dash', compact('topCandidates', 'isSubmitted'));
             } catch (\Exception $e) {
                 return back()->withError('Error fetching data: ' . $e->getMessage());
             }
         }
+        
 
         public function dashboard()
         {
@@ -600,9 +604,10 @@ class UserManagementController extends Controller
             $candidateNames = $request->input('candidate_name'); // Get candidate_name values
             $overallRanks = $request->input('overallRank'); // Get overallRank values
         
-            // Validate $topCandidateIds
-            if (!is_array($topCandidateIds) || empty($topCandidateIds)) {
-                return redirect()->back()->with('error', 'Please select candidates for the semi-finals.');
+            // Validate number of candidates selected
+            $numCandidates = count($topCandidateIds);
+            if ($numCandidates !== 8) {
+                return redirect()->back()->with('error', 'You must select exactly 8 candidates for the semi-finals.');
             }
         
             try {
@@ -650,7 +655,7 @@ class UserManagementController extends Controller
                 return redirect()->back()->with('error', 'Failed to insert top candidates. ' . $e->getMessage());
             }
         }
-                           
+                         
         public function storeSemiFinalScore(Request $request)
         {
             // Validate the incoming request data
@@ -658,34 +663,34 @@ class UserManagementController extends Controller
                 'candidate_number' => 'required|array',
                 'candidate_number.*' => 'required|integer',
                 'beauty_of_face' => 'required|array',
-                'beauty_of_face.*' => 'required|integer|min:75|max:100',
+                'beauty_of_face.*' => 'required|integer|min:0|max:50',
                 'poise_grace_projection' => 'required|array',
-                'poise_grace_projection.*' => 'required|integer|min:75|max:100',
+                'poise_grace_projection.*' => 'required|integer|min:0|max:35',
                 'composure' => 'required|array',
-                'composure.*' => 'required|integer|min:75|max:100',
+                'composure.*' => 'required|integer|min:0|max:15',
                 'judge_name' => 'required|array',
                 'judge_name.*' => 'required|string|max:255',
                 'rank' => 'required|array',
                 'rank.*' => 'required|integer',
             ]);
-
+        
             // Array to hold total scores for each candidate
             $totalScores = [];
-
+        
             // Loop through the submitted data and calculate total scores
             foreach ($validatedData['candidate_number'] as $index => $candidateNumber) {
                 $beautyOfFace = $validatedData['beauty_of_face'][$index];
                 $poiseGraceProjection = $validatedData['poise_grace_projection'][$index];
                 $composure = $validatedData['composure'][$index];
-
-                // Calculate the total score by averaging the three scores
-                $totalScore = ($beautyOfFace + $poiseGraceProjection + $composure) / 3;
-
+        
+                // Calculate the total score by summing up the scores
+                $totalScore = $beautyOfFace + $poiseGraceProjection + $composure;
+        
                 // Check if scores already exist for this candidate and judge
                 $existingScore = SemiFinalScore::where('candidate_number', $candidateNumber)
                     ->where('judge_name', $validatedData['judge_name'][$index])
                     ->first();
-
+        
                 if ($existingScore) {
                     // Update the existing score
                     $existingScore->update([
@@ -707,14 +712,14 @@ class UserManagementController extends Controller
                         'judge_name' => $validatedData['judge_name'][$index],
                     ]);
                 }
-
+        
                 // Store the total score for ranking purposes
                 $totalScores[$candidateNumber] = $totalScore;
             }
-
+        
             // Sort the total scores in descending order
             arsort($totalScores);
-
+        
             // Calculate ranks based on the sorted total scores
             $rank = 0; // Start rank from 0
             $prevScore = null;
@@ -722,22 +727,23 @@ class UserManagementController extends Controller
                 if ($totalScore !== $prevScore) {
                     $rank++;
                 }
-
+        
                 // Update the rank in the database for each candidate
                 SemiFinalScore::where('candidate_number', $candidateNumber)
                     ->update(['rank' => $rank]);
-
+        
                 $prevScore = $totalScore;
             }
-
+        
             // Redirect back to the judge dashboard page
             return redirect()->back()->with('success', 'Semi-Finals scores submitted successfully!');
         }
-
-        public function finalsDashboard ()
-        {
-            $candidates = Candidate::all();
         
+        public function finalsDashboard()
+        {
+            // Fetch all finalists ordered by candidate_number ascending
+            $candidates = FinalistCandidates::orderBy('candidate_number', 'asc')->get();
+            
             // Fetch submitted scores for the current judge
             $judgeName = Session::get('userName');
             $submittedScores = FinalScore::where('judge_name', $judgeName)
@@ -748,7 +754,7 @@ class UserManagementController extends Controller
             // Pass candidates and submitted scores to the view
             return view('judge.finals_dash', compact('candidates', 'submittedScores'));
         }
-
+        
         public function storeFinalScore(Request $request)
         {
             // Validate the incoming request data
@@ -756,36 +762,31 @@ class UserManagementController extends Controller
                 'candidate_number' => 'required|array',
                 'candidate_number.*' => 'required|integer',
                 'beauty_of_face' => 'required|array',
-                'beauty_of_face.*' => 'required|integer|min:75|max:100',
+                'beauty_of_face.*' => 'required|integer|min:0|max:50', // Corrected max value
                 'poise_grace_projection' => 'required|array',
-                'poise_grace_projection.*' => 'required|integer|min:75|max:100',
+                'poise_grace_projection.*' => 'required|integer|min:0|max:35', // Corrected max value
                 'composure' => 'required|array',
-                'composure.*' => 'required|integer|min:75|max:100',
+                'composure.*' => 'required|integer|min:0|max:15', // Corrected max value
                 'judge_name' => 'required|array',
                 'judge_name.*' => 'required|string|max:255',
                 'rank' => 'required|array',
                 'rank.*' => 'required|integer',
             ]);
-
-            // Array to hold total scores for each candidate
-            $totalScores = [];
-
-            // Loop through the submitted data and calculate total scores
+        
+            // Loop through the validated data and store/update in the database
             foreach ($validatedData['candidate_number'] as $index => $candidateNumber) {
                 $beautyOfFace = $validatedData['beauty_of_face'][$index];
                 $poiseGraceProjection = $validatedData['poise_grace_projection'][$index];
                 $composure = $validatedData['composure'][$index];
-
-                // Calculate the total score by averaging the three scores
-                $totalScore = ($beautyOfFace + $poiseGraceProjection + $composure) / 3;
-
-                // Check if scores already exist for this candidate and judge
+                $totalScore = $beautyOfFace + $poiseGraceProjection + $composure;
+        
+                // Check if score exists for this candidate and judge
                 $existingScore = FinalScore::where('candidate_number', $candidateNumber)
                     ->where('judge_name', $validatedData['judge_name'][$index])
                     ->first();
-
+        
                 if ($existingScore) {
-                    // Update the existing score
+                    // Update existing score
                     $existingScore->update([
                         'beauty_of_face' => $beautyOfFace,
                         'poise_grace_projection' => $poiseGraceProjection,
@@ -794,7 +795,7 @@ class UserManagementController extends Controller
                         'rank' => $validatedData['rank'][$index],
                     ]);
                 } else {
-                    // Store the new final score in the database
+                    // Create new score
                     FinalScore::create([
                         'candidate_number' => $candidateNumber,
                         'beauty_of_face' => $beautyOfFace,
@@ -805,33 +806,12 @@ class UserManagementController extends Controller
                         'judge_name' => $validatedData['judge_name'][$index],
                     ]);
                 }
-
-                // Store the total score for ranking purposes
-                $totalScores[$candidateNumber] = $totalScore;
             }
-
-            // Sort the total scores in descending order
-            arsort($totalScores);
-
-            // Calculate ranks based on the sorted total scores
-            $rank = 0; // Start rank from 0
-            $prevScore = null;
-            foreach ($totalScores as $candidateNumber => $totalScore) {
-                if ($totalScore !== $prevScore) {
-                    $rank++;
-                }
-
-                // Update the rank in the database for each candidate
-                FinalScore::where('candidate_number', $candidateNumber)
-                    ->update(['rank' => $rank]);
-
-                $prevScore = $totalScore;
-            }
-
-            // Redirect back to the judge dashboard page
+        
+            // Redirect back with success message
             return redirect()->back()->with('success', 'Final scores submitted successfully!');
         }
-
+                
         public function insertFinalists(Request $request)
         {
             // Retrieve candidate inputs
@@ -881,6 +861,44 @@ class UserManagementController extends Controller
                 return redirect()->back()->with('error', 'Failed to insert top finalists. ' . $e->getMessage());
             }
         }
-        
 
+        public function deleteUser($id)
+        {
+            $user = User::find($id);
+    
+            if (!$user) {
+                return redirect()->back()->with('error', 'User not found');
+            }
+    
+            $user->delete();
+    
+            return redirect()->route('usermanage.dashboard')->with('success', 'User deleted successfully');
+        }
+
+        public function FinalDash(Request $request)
+        {
+            try {
+                // Fetch all candidates with their ranks from final_scores table
+                $topCandidates = FinalScore::select('candidate_number')
+                    ->selectRaw('SUM(rank) AS total_rank')
+                    ->groupBy('candidate_number')
+                    ->orderBy('total_rank')
+                    ->get();
+        
+                // Assign overall rank based on the sorted total ranks
+                $rank = 1;
+                foreach ($topCandidates as $candidate) {
+                    $candidate->overall_rank = $rank++;
+                }
+        
+                // Check if top 4 finalists have already been submitted
+                $isSubmitted = FinalistCandidates::count() >= 4; // Adjust logic as per your application
+        
+                // Pass candidate data and submission status to the view
+                return view('usermanage.final_dash', compact('topCandidates', 'isSubmitted'));
+            } catch (\Exception $e) {
+                return back()->withError('Error fetching data: ' . $e->getMessage());
+            }
+        }
+        
 }

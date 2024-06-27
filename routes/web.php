@@ -30,8 +30,11 @@ Route::middleware(['isLoggedIn'])->group(function () {
     // Semi-Final Management Routes
     Route::get('/usermanage/semi_final_dash', [UserManagementController::class, 'SemiFinalDash'])->name('usermanage.semi_final_dash');
     Route::post('/insert-semi-finalists', [UserManagementController::class, 'insertSemiFinalists'])->name('insertSemiFinalists');
+    
     // Final Management Routes
     Route::post('/insert-finalists', [UserManagementController::class, 'insertFinalists'])->name('insertFinalists');
+    Route::get('/usermanage/final_dash', [UserManagementController::class, 'FinalDash'])->name('usermanage.final_dash');
+
     // Judge Dashboard Routes
     Route::get('/judge/judgeDashboard', [UserManagementController::class, 'judgeDashboard'])->name('judge.judge_dashboard');
     Route::get('/judge/semifinalsDashboard', [UserManagementController::class, 'semifinalsDashboard'])->name('judge.semi_finals_dash');
