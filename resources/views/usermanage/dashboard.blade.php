@@ -351,6 +351,13 @@
         </div>
         <ul class="nav-list">
             <li>
+                <a href="{{route('usermanage.dashboardMain')}}">
+                    <i class='bx bx-user'></i>
+                    <span class="links_name">Dashboard</span>
+                </a>
+                <span class="tooltip">Dashboard</span>
+            </li>
+            <li>
                 <a href="{{route('usermanage.dashboard')}}">
                     <i class='bx bx-user'></i>
                     <span class="links_name">User Management</span>
@@ -369,7 +376,7 @@
                     <i class='bx bx-edit'></i>
                     <span class="links_name">Preliminaries</span>
                 </a>
-            </li>        
+            </li>
             <li>
                 <a href="{{route('usermanage.semi_final_dash')}}">
                     <i class='bx bx-line-chart'></i>

@@ -17,7 +17,7 @@ class UserAuthenticationController extends Controller
             if ($user) {
                 switch ($user->role) {
                     case 'admin':
-                        return redirect()->route('usermanage.dashboard');
+                        return redirect()->route('usermanage.dashboardMain');
                     case 'judge_prelim':
                         return redirect()->route('judge.judge_dashboard');
                     case 'judge_gown':
@@ -57,7 +57,7 @@ class UserAuthenticationController extends Controller
 
             switch ($user->role) {
                 case 'admin':
-                    return redirect()->route('usermanage.dashboard');
+                    return redirect()->route('usermanage.dashboardMain');
                 case 'judge_prelim':
                     return redirect()->route('judge.judge_dashboard');
                 case 'judge_gown':

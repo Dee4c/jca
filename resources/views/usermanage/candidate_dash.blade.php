@@ -348,6 +348,11 @@
             height: 100px;
             width: 100px;
         }
+
+        .input-group {
+            margin-top: 5px;
+            width: 20%;
+        }
         
     </style>
 </head>
@@ -357,6 +362,13 @@
             <div class="logo_name">Miss Q</div>
         </div>
         <ul class="nav-list">
+            <li>
+                <a href="{{route('usermanage.dashboardMain')}}">
+                    <i class='bx bx-user'></i>
+                    <span class="links_name">Dashboard</span>
+                </a>
+                <span class="tooltip">Dashboard</span>
+            </li>
             <li>
                 <a href="{{route('usermanage.dashboard')}}">
                     <i class='bx bx-user'></i>
@@ -376,7 +388,7 @@
                     <i class='bx bx-edit'></i>
                     <span class="links_name">Preliminaries</span>
                 </a>
-            </li>        
+            </li>
             <li>
                 <a href="{{route('usermanage.semi_final_dash')}}">
                     <i class='bx bx-line-chart'></i>
@@ -407,6 +419,15 @@
 <div class="content">
     <div class="container">
         <h1 class="title-id">CANDIDATE MANAGEMENT</h1>
+
+        <!-- Search Form -->
+        <form action="{{ route('usermanage.candidate_dash') }}" method="GET" class="mb-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search by Name" name="search" value="{{ request()->input('search') }}">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+            </div>
+        </form>
+
        <!-- Add Candidate Button -->
 <div class="add-judge-btn">
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCandidateModal">Add Candidate</button>

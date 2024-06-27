@@ -3,27 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Semi-Finals Table</title>
+    <title>Admin Main Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
     <style>
-
         @import url(https://fonts.googleapis.com/css?family=Roboto:400,500,300,700);
-        body{
-            background: rgb(0,0,0);
-            background: linear-gradient(90deg, rgba(0,0,0,1) 17%, rgba(198,174,53,1) 75%);
+        body {
+            background: rgb(0, 0, 0);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 1) 17%, rgba(198, 174, 53, 1) 75%);
             font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
         }
+
         /* Google Font Link */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
-    
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: "Poppins", sans-serif;
         }
-    
+
         .sidebar {
             position: fixed;
             left: 0;
@@ -36,7 +38,7 @@
             z-index: 99;
             transition: all 0.5s ease;
         }
-    
+
         .sidebar .logo-details {
             height: 60px;
             display: flex;
@@ -44,7 +46,7 @@
             position: relative;
             padding-right: 50px;
         }
-    
+
         .sidebar .logo-details .icon {
             position: absolute;
             top: 50%;
@@ -54,11 +56,11 @@
             color: #fff;
             transition: all 0.5s ease;
         }
-    
+
         .sidebar .logo-details .icon {
             right: 0;
         }
-    
+
         .sidebar .logo-details .logo_name {
             color: #fff;
             font-size: 20px;
@@ -67,7 +69,7 @@
             opacity: 1;
             transition: all 0.5s ease;
         }
-    
+
         .sidebar .logo-details #btn {
             position: absolute;
             top: 50%;
@@ -80,11 +82,11 @@
             cursor: pointer;
             transition: all 0.5s ease;
         }
-    
+
         .sidebar .logo-details #btn {
             text-align: right;
         }
-    
+
         .sidebar i {
             color: #fff;
             height: 60px;
@@ -93,18 +95,18 @@
             text-align: center;
             line-height: 60px;
         }
-    
+
         .sidebar .nav-list {
             margin-top: 20px;
             height: 100%;
         }
-    
+
         .sidebar li {
             position: relative;
             margin: 8px 0;
             list-style: none;
         }
-    
+
         .sidebar li .tooltip {
             position: absolute;
             top: -20px;
@@ -121,7 +123,7 @@
             pointer-events: none;
             transition: 0s;
         }
-    
+
         .sidebar li:hover .tooltip {
             opacity: 1;
             pointer-events: auto;
@@ -129,11 +131,11 @@
             top: 50%;
             transform: translateY(-50%);
         }
-    
+
         .sidebar li.open .tooltip {
             display: none;
         }
-    
+
         .sidebar input {
             font-size: 15px;
             color: #fff;
@@ -147,7 +149,7 @@
             transition: all 0.5s ease;
             background: #1d1b31;
         }
-    
+
         .sidebar li a {
             display: flex;
             height: 100%;
@@ -158,11 +160,11 @@
             transition: all 0.4s ease;
             background: #11101D;
         }
-    
+
         .sidebar li a:hover {
             background: #FFF;
         }
-    
+
         .sidebar li a .links_name {
             color: #fff;
             font-size: 15px;
@@ -172,20 +174,20 @@
             pointer-events: auto;
             transition: 0.4s;
         }
-    
+
         .sidebar li a:hover .links_name,
         .sidebar li a:hover i {
             transition: all 0.5s ease;
             color: #11101D;
         }
-    
+
         .sidebar li i {
             height: 50px;
             line-height: 50px;
             font-size: 18px;
             border-radius: 12px;
         }
-    
+
         .sidebar li.profile {
             position: fixed;
             height: 60px;
@@ -197,13 +199,13 @@
             transition: all 0.5s ease;
             overflow: hidden;
         }
-    
+
         .sidebar li.profile .profile-details {
             display: flex;
             align-items: center;
             flex-wrap: nowrap;
         }
-    
+
         .sidebar li img {
             height: 45px;
             width: 45px;
@@ -211,7 +213,7 @@
             border-radius: 6px;
             margin-right: 10px;
         }
-    
+
         .sidebar li.profile .name,
         .sidebar li.profile .job {
             font-size: 15px;
@@ -219,11 +221,11 @@
             color: #fff;
             white-space: nowrap;
         }
-    
+
         .sidebar li.profile .job {
             font-size: 12px;
         }
-    
+
         .sidebar .profile #log_out {
             position: absolute;
             top: 50%;
@@ -236,141 +238,45 @@
             border-radius: 0px;
             transition: all 0.5s ease;
         }
-    
+
         .home-section {
             position: relative;
             background: #E4E9F7;
             min-height: 100vh;
-            top: 0;
-            left: 250px;
-            width: calc(100% - 250px);
+            margin-left: 250px; /* Adjusted left margin */
+            padding: 20px; /* Added padding */
             transition: all 0.5s ease;
             z-index: 2;
         }
-    
+
         .home-section .text {
             display: inline-block;
             color: #11101d;
             font-size: 25px;
             font-weight: 500;
-            margin: 18px
+            margin: 18px;
         }
-    
+
         @media (max-width: 420px) {
             .sidebar li .tooltip {
                 display: none;
             }
         }
-    
-        /* Add custom styles here */
-        .content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-    
-        /* Updated table styles */
-        table {
-            width: 100%;
-            table-layout: fixed;
-            background-color: #11101D;
-            color: #46ec0f;
-        }
-    
-        .tbl-header {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-    
-        .tbl-content {
-            height: auto;
-            overflow-x: auto;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-    
-        th {
-            padding: 20px 15px;
-            text-align: left;
-            font-weight: 500;
-            font-size: 12px;
-            color: black;
-            text-transform: uppercase;
-        }
-    
-        td {
-            padding: 15px;
-            text-align: left;
-            vertical-align: middle;
-            font-weight: 300;
-            font-size: 12px;
-            color: yellow;
-            border-bottom: solid 1px rgba(255, 255, 255, 0.1);
-        }
-    
+
         .title-id {
             color: white;
-            margin: auto;
+            margin-top: 15px;
         }
 
-        .form-select {
-            width: 200px; /* Adjust the width as needed */
+        .row {
+            margin-top: 5px;
         }
 
-                /* Dropdown Styles */
-        .dropdown {
-            padding-left: 20px;
-            display: none;
-        }
-
-        .dropdown li {
-            margin: 8px 0;
-            list-style: none;
-        }
-
-        .dropdown a {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: #fff;
-            transition: all 0.4s ease;
-        }
-
-        .dropdown a:hover {
-            background: #FFF;
-            color: #11101D;
-        }
-
-        h2 {
-            color:white;
-        }
-
-        p {
-            color:white;
-        }
-
-         /* Additional styles for print button */
-         .print-btn-container {
-            margin-bottom: 20px;
-        }
-    
-        .print-btn {
-            background-color: #198754;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-    
-        .print-btn:hover {
-            background-color: #0d6efd;
-        }
-    
-        @media print {
-            .print-btn-container {
-                display: none; /* Hide print button when printing */
-            }
+        .card {
+            margin-top: 7px;
         }
     </style>
+
 </head>
 <body>
 <div class="sidebar">
@@ -378,7 +284,7 @@
         <div class="logo_name">Miss Q</div>
     </div>
     <ul class="nav-list">
-         <li>
+        <li>
             <a href="{{route('usermanage.dashboardMain')}}">
                 <i class='bx bx-user'></i>
                 <span class="links_name">Dashboard</span>
@@ -404,7 +310,7 @@
                 <i class='bx bx-edit'></i>
                 <span class="links_name">Preliminaries</span>
             </a>
-        </li>        
+        </li>
         <li>
             <a href="{{route('usermanage.semi_final_dash')}}">
                 <i class='bx bx-line-chart'></i>
@@ -432,43 +338,105 @@
         </li>
     </ul>
 </div>
-
-<div class="content">
-    <div class="container">
-        @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @elseif (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        <h1 class="title-id">Finals Table</h1>
-         <!-- Print button container -->
-         <div class="print-btn-container">
-            <button class="print-btn" onclick="window.print()">Print Table</button>
+<div class="container" style="margin-left: 270px;">
+    <h1 class="title-id">Dashboard</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Judges</h5>
+                    <p class="card-text">{{ $judgesCount }}</p>
+                </div>
+            </div>
         </div>
-
-        <!-- Table to display finalists -->
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Candidate Number</th>
-                    <th>Total Rank</th>
-                    <th>Overall Ranking</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($topCandidates as $candidate)
-                <tr>
-                    <td>{{ $candidate->candidate_number }}</td>
-                    <td>{{ $candidate->total_rank }}</td>
-                    <td>{{ $candidate->overall_rank }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Preliminary Judges</h5>
+                    <p class="card-text">{{ $preliminaryJudgesCount }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Semi-Final Judges</h5>
+                    <p class="card-text">{{ $semiFinalJudgesCount }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Final Judges</h5>
+                    <p class="card-text">{{ $finalJudgesCount }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Candidates</h5>
+                    <p class="card-text">{{ $candidatesCount }}</p>
+                </div>
+            </div>
+        </div>
+       <!-- Chart for candidates joined per year -->
+       <div class="col-md-12 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Candidates Joined per Year</h5>
+                <div style="height: 400px; width: 100%;">
+                    <canvas id="candidatesJoinedChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+</div>
 
-</body>
+<!-- Include Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Assuming you have passed data from the controller to the Blade view
+const years = @json($years); // Array of years
+const candidatesJoinedPerYear = @json($candidatesJoinedPerYear); // Array of candidate counts corresponding to each year
+
+// Create a bar chart
+var ctx = document.getElementById('candidatesJoinedChart').getContext('2d');
+var candidatesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: years,
+        datasets: [{
+            label: 'Candidates Joined',
+            data: candidatesJoinedPerYear,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue color with transparency
+            borderColor: 'rgba(54, 162, 235, 1)', // Solid blue color
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Number of Candidates'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Years'
+                }
+            }
+        }
+    }
+});
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-</html> 
+</body>
+</html>

@@ -345,6 +345,32 @@
         p {
             color:white;
         }
+
+        /* Additional styles for print button */
+        .print-btn-container {
+            margin-bottom: 20px;
+        }
+    
+        .print-btn {
+            background-color: #198754;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+    
+        .print-btn:hover {
+            background-color: #0d6efd;
+        }
+    
+        @media print {
+            .print-btn-container {
+                display: none; /* Hide print button when printing */
+            }
+        }
+        
     </style>
 </head>
 <body>
@@ -409,7 +435,10 @@
         @endif
 
         <h1 class="title-id">Semi-Finals Table</h1>
-        <br>
+         <!-- Print button container -->
+         <div class="print-btn-container">
+            <button class="print-btn" onclick="window.print()">Print Table</button>
+        </div>
 
         <!-- Table to display semi-finalists -->
         <table class="table table-bordered">

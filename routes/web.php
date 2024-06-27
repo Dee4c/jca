@@ -35,6 +35,9 @@ Route::middleware(['isLoggedIn'])->group(function () {
     Route::post('/insert-finalists', [UserManagementController::class, 'insertFinalists'])->name('insertFinalists');
     Route::get('/usermanage/final_dash', [UserManagementController::class, 'FinalDash'])->name('usermanage.final_dash');
 
+    //Admin main dashboard
+    Route::get('/usermanage/dashboard_main', [UserManagementController::class, 'dashboardMain'])->name('usermanage.dashboardMain');
+
     // Judge Dashboard Routes
     Route::get('/judge/judgeDashboard', [UserManagementController::class, 'judgeDashboard'])->name('judge.judge_dashboard');
     Route::get('/judge/semifinalsDashboard', [UserManagementController::class, 'semifinalsDashboard'])->name('judge.semi_finals_dash');

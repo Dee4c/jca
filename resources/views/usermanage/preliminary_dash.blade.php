@@ -341,6 +341,31 @@
         h2 {
             color: white;
         }
+
+         /* Additional styles for print button */
+         .print-btn-container {
+            margin-bottom: 20px;
+        }
+    
+        .print-btn {
+            background-color: #198754;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+    
+        .print-btn:hover {
+            background-color: #0d6efd;
+        }
+    
+        @media print {
+            .print-btn-container {
+                display: none; /* Hide print button when printing */
+            }
+        }
         
     </style>
 </head>
@@ -350,6 +375,13 @@
             <div class="logo_name">Miss Q</div>
         </div>
         <ul class="nav-list">
+            <li>
+                <a href="{{route('usermanage.dashboardMain')}}">
+                    <i class='bx bx-user'></i>
+                    <span class="links_name">Dashboard</span>
+                </a>
+                <span class="tooltip">Dashboard</span>
+            </li>
             <li>
                 <a href="{{route('usermanage.dashboard')}}">
                     <i class='bx bx-user'></i>
@@ -369,7 +401,7 @@
                     <i class='bx bx-edit'></i>
                     <span class="links_name">Preliminaries</span>
                 </a>
-            </li>        
+            </li>
             <li>
                 <a href="{{route('usermanage.semi_final_dash')}}">
                     <i class='bx bx-line-chart'></i>
@@ -405,7 +437,10 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
         <h1 class="title-id">Preliminary Table</h1>
-        <br>
+        <!-- Print button container -->
+        <div class="print-btn-container">
+            <button class="print-btn" onclick="window.print()">Print Table</button>
+        </div>
 
         <!-- Form for submitting semi-finalists -->
         <form method="POST" action="{{ route('insertSemiFinalists') }}">

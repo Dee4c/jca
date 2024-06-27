@@ -103,9 +103,22 @@ class UserManagementController extends Controller
         return redirect()->route('usermanage.candidate_dash')->with('success', 'Candidate added successfully');
     }
     
-    public function candidateDash()
+    public function candidateDash(Request $request)
     {
-        $candidates = Candidate::all();
+        $search = $request->query('search'); // Retrieve the 'search' query parameter from the request
+
+        // Query to fetch candidates
+        $candidatesQuery = Candidate::query();
+
+        // If a search term is provided, filter candidates by 'candidateName'
+        if (!empty($search)) {
+            $candidatesQuery->where('candidateName', 'like', '%' . $search . '%');
+        }
+
+        // Retrieve all candidates matching the search criteria or all candidates if no search term provided
+        $candidates = $candidatesQuery->get();
+
+        // Return the view with the filtered candidates
         return view('usermanage.candidate_dash', compact('candidates'));
     }
 
@@ -900,5 +913,39 @@ class UserManagementController extends Controller
                 return back()->withError('Error fetching data: ' . $e->getMessage());
             }
         }
-        
+
+        public function dashboardMain()
+        {
+            // Counting judges in different roles
+            $judgesCount = User::where('role', 'like', '%judge%')->count();
+            $preliminaryJudgesCount = User::where('role', 'judge_prelim')->count();
+            $semiFinalJudgesCount = User::where('role', 'judge_semi')->count();
+            $finalJudgesCount = User::where('role', 'judge_final')->count();
+
+            // Counting all candidates
+            $candidatesCount = Candidate::count();
+
+            // Fetching data for candidates joined per year
+            $candidatesJoinedPerYear = Candidate::select(DB::raw('COUNT(*) as count'), DB::raw('YEAR(created_at) as year'))
+                ->groupBy(DB::raw('YEAR(created_at)'))
+                ->get();
+
+            // Assuming you have $candidatesJoinedPerYear as a collection of counts per year
+            $years = [];
+            $counts = [];
+            foreach ($candidatesJoinedPerYear as $data) {
+                $years[] = $data->year;
+                $counts[] = $data->count;
+            }
+
+            return view('usermanage.dashboard_main', [
+                'judgesCount' => $judgesCount,
+                'preliminaryJudgesCount' => $preliminaryJudgesCount,
+                'semiFinalJudgesCount' => $semiFinalJudgesCount,
+                'finalJudgesCount' => $finalJudgesCount,
+                'candidatesCount' => $candidatesCount,
+                'years' => $years, // Pass years array to the view
+                'candidatesJoinedPerYear' => $counts, // Pass counts array to the view
+            ]);
+        }
 }
