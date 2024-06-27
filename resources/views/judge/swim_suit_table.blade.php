@@ -60,9 +60,9 @@
         }
     
         .sidebar .logo-details .logo_name {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 600;
+            color: gold;
+            font-size:40px;
+            font-weight: 700;
             margin-left: 40px;
             opacity: 1;
             transition: all 0.5s ease;
@@ -145,7 +145,7 @@
             border: none;
             border-radius: 12px;
             transition: all 0.5s ease;
-            background: #1d1b31;
+            background: #7c72ea;
         }
     
         .sidebar li a {
@@ -160,7 +160,7 @@
         }
     
         .sidebar li a:hover {
-            background: #FFF;
+            background: yellow;
         }
     
         .sidebar li a .links_name {
@@ -316,6 +316,20 @@
         h2 {
             color:white;
         }
+        .dropdown-menu .dropdown-item {
+            color:White
+        }
+        .swimsuit {
+            text-align: center;
+            font-size:50px;
+        }
+
+        .name_job {
+            color:white;
+            margin-left: 1000px;
+            font-size: 20px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -338,7 +352,7 @@
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             @if ($user->role == 'judge_prelim')
                             <li><a class="dropdown-item" href="{{ route('judge.judge_dashboard') }}">Pre-Interview</a></li>
-                            <li><a class="dropdown-item" href="{{ route('judge.swim_suit_table') }}">Swim-Suit</a></li>
+                            <li><a class="dropdown-item" href="{{ route('judge.swim_suit_table') }}">Swimsuit</a></li>
                             @endif
                         </ul>
                     </li>
@@ -379,16 +393,29 @@
 
     <div class="content">
         <div class="container">
-            @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                {{ session('error') }}
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif
-    
-            <h1 class="title-id">PRELIMINARY TABLE</h1>
+            
+            @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+            <div class="name_job">
+                <div class="name">Welcome Judge, {{ Session::get('userName') }}</div> <!-- Display user's name from session -->
+            </div>
+            <h1 class="title-id">PRELIMINARY ROUND</h1>
             <br>
-            <h2>Swim-Suit</h2>
+            <h2 class="swimsuit">Swimsuit</h2>
             <br>
             
             <!-- Swim Suit Form -->

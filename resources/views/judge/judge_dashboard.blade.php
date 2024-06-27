@@ -59,13 +59,13 @@
     }
 
     .sidebar .logo-details .logo_name {
-        color: #fff;
-        font-size: 20px;
-        font-weight: 600;
-        margin-left: 40px;
-        opacity: 1;
-        transition: all 0.5s ease;
-    }
+            color: gold;
+            font-size:40px;
+            font-weight: 700;
+            margin-left: 40px;
+            opacity: 1;
+            transition: all 0.5s ease;
+        }
 
     .sidebar .logo-details #btn {
         position: absolute;
@@ -156,10 +156,11 @@
         text-decoration: none;
         transition: all 0.4s ease;
         background: #11101D;
+        color:white;
     }
 
     .sidebar li a:hover {
-        background: #FFF;
+        background: yellow;
     }
 
     .sidebar li a .links_name {
@@ -175,7 +176,7 @@
     .sidebar li a:hover .links_name,
     .sidebar li a:hover i {
         transition: all 0.5s ease;
-        color: #11101D;
+        color: #42399e;
     }
 
     .sidebar li i {
@@ -313,9 +314,21 @@
         display: none; 
     }
 
-    h2{
+    h2 {
         color:white;
     }
+    .pre {
+            text-align: center;
+            font-size:50px;
+    }
+
+    .name_job {
+        color:white;
+        margin-left: 1000px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
 </style>
 </head>
 <body>
@@ -376,19 +389,31 @@
             </li>
         </ul>
     </div>
-    
     <div class="content">
         <div class="container">
-            @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                {{ session('error') }}
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif
-    
-            <h1 class="title-id">PRELIMINARY TABLE</h1>
+            
+            @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+            <div class="name_job">
+                <div class="name">Welcome Judge, {{ Session::get('userName') }}</div> <!-- Display user's name from session -->
+            </div>
+            <h1 class="title-id">PRELIMINARY ROUND</h1>
             <br>
-            <h2>Pre-Interview</h2>
+            <h2 class="pre">Pre-Interview Score Sheet</h2>
             <br>
             <!-- Pre Interview Form -->
             <div id="pre_interview_table" class="category-table-pre-interview">

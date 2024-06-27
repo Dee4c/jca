@@ -60,9 +60,9 @@
         }
     
         .sidebar .logo-details .logo_name {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 600;
+            color: gold;
+            font-size:40px;
+            font-weight: 700;
             margin-left: 40px;
             opacity: 1;
             transition: all 0.5s ease;
@@ -406,6 +406,23 @@
     </div>
 <div class="content">
     <div class="container">
+        @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+        
+        @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
         <h1 class="title-id">USER MANAGEMENT</h1>
         <!-- Add Judge Button -->
         <div class="add-judge-btn">

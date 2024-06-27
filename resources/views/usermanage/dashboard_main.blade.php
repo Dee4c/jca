@@ -62,14 +62,13 @@
         }
 
         .sidebar .logo-details .logo_name {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 600;
+            color: gold;
+            font-size:40px;
+            font-weight: 700;
             margin-left: 40px;
             opacity: 1;
             transition: all 0.5s ease;
         }
-
         .sidebar .logo-details #btn {
             position: absolute;
             top: 50%;
@@ -343,7 +342,7 @@
     <div class="row">
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body" style="background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(112,121,9,0.7978293368128502) 0%, rgba(170,244,22,0.9686976841517857) 100%, rgba(0,212,255,1) 100%);">
                     <h5 class="card-title">Total Judges</h5>
                     <p class="card-text">{{ $judgesCount }}</p>
                 </div>
@@ -351,7 +350,7 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body"style="background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(121,79,9,0.07794138163077735) 0%, rgba(0,212,255,1) 100%);">
                     <h5 class="card-title">Preliminary Judges</h5>
                     <p class="card-text">{{ $preliminaryJudgesCount }}</p>
                 </div>
@@ -359,7 +358,7 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body"style="background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(112,121,9,0.7978293368128502) 0%, rgba(153,174,163,0.25721309031425066) 100%, rgba(0,212,255,1) 100%);">
                     <h5 class="card-title">Semi-Final Judges</h5>
                     <p class="card-text">{{ $semiFinalJudgesCount }}</p>
                 </div>
@@ -367,7 +366,7 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body"style="background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(90,120,14,0.3692579082414216) 0%, rgba(0,212,255,1) 100%);">
                     <h5 class="card-title">Final Judges</h5>
                     <p class="card-text">{{ $finalJudgesCount }}</p>
                 </div>
@@ -375,7 +374,7 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body"style="background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);">
                     <h5 class="card-title">Total Candidates</h5>
                     <p class="card-text">{{ $candidatesCount }}</p>
                 </div>

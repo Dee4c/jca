@@ -209,13 +209,16 @@ class UserManagementController extends Controller
                                     + ($gownScores->sum('rank') ?: 0);
             }
 
-            // Assign overall rank based on total score
+            // Sort candidates by total score in ascending order to rank lowest total first
+            $candidates = $candidates->sortBy('total');
+
+            // Assign overall rank based on sorted total score (ascending)
             $rank = 1;
-            foreach ($candidates->sortBy('total') as $candidate) {
+            foreach ($candidates as $candidate) {
                 $candidate->overallRank = $rank++;
             }
 
-            // Fetch detailed scores with judges' names
+            // Fetch detailed scores with judges' names (if needed)
             $preInterviewScores = DB::table('pre_interview_scores')
                 ->join('candidates', 'pre_interview_scores.candidate_number', '=', 'candidates.candidateNumber')
                 ->select('candidates.candidateNumber', 'candidates.candidateName', 'pre_interview_scores.judge_name', 'pre_interview_scores.rank')
@@ -425,7 +428,7 @@ class UserManagementController extends Controller
         }
     
         // Redirect back to the judge dashboard page
-        return redirect()->back()->with('success', 'Swim-Suit scores submitted successfully!');
+        return redirect()->back()->with('success', 'Swimsuit scores submitted successfully!');
     }
     
     public function storeGownScore(Request $request)
@@ -565,14 +568,6 @@ class UserManagementController extends Controller
                 // Check if top 4 finalists have already been submitted
                 $isSubmitted = FinalistCandidates::count() >= 4;
         
-                // Fetch submitted scores for the current judge (if needed)
-                // Example usage:
-                // $judgeName = Session::get('userName');
-                // $submittedScores = SemiFinalScore::where('judge_name', $judgeName)
-                //     ->get()
-                //     ->keyBy('candidate_number')
-                //     ->toArray();
-        
                 // Pass candidate data and submission status to the view
                 return view('usermanage.semi_final_dash', compact('topCandidates', 'isSubmitted'));
             } catch (\Exception $e) {
@@ -580,7 +575,6 @@ class UserManagementController extends Controller
             }
         }
         
-
         public function dashboard()
         {
             $users = User::where('role', '!=', 'admin')->get();
@@ -889,30 +883,38 @@ class UserManagementController extends Controller
         }
 
         public function FinalDash(Request $request)
-        {
-            try {
-                // Fetch all candidates with their ranks from final_scores table
-                $topCandidates = FinalScore::select('candidate_number')
-                    ->selectRaw('SUM(rank) AS total_rank')
-                    ->groupBy('candidate_number')
-                    ->orderBy('total_rank')
-                    ->get();
-        
-                // Assign overall rank based on the sorted total ranks
-                $rank = 1;
-                foreach ($topCandidates as $candidate) {
-                    $candidate->overall_rank = $rank++;
-                }
-        
-                // Check if top 4 finalists have already been submitted
-                $isSubmitted = FinalistCandidates::count() >= 4; // Adjust logic as per your application
-        
-                // Pass candidate data and submission status to the view
-                return view('usermanage.final_dash', compact('topCandidates', 'isSubmitted'));
-            } catch (\Exception $e) {
-                return back()->withError('Error fetching data: ' . $e->getMessage());
-            }
+{
+    try {
+        // Fetch candidate numbers and their total ranks from final_scores table
+        $topCandidates = FinalScore::select('candidate_number')
+            ->selectRaw('SUM(rank) AS total_rank')
+            ->groupBy('candidate_number')
+            ->orderBy('total_rank')
+            ->get();
+
+        // Assign overall rank based on the sorted total ranks
+        $rank = 1;
+        foreach ($topCandidates as $candidate) {
+            $candidate->overall_rank = $rank++;
         }
+
+        // Fetch candidate names from top_candidates table and associate them with their candidate numbers
+        foreach ($topCandidates as $candidate) {
+            $candidate_name = TopCandidates::where('candidate_number', $candidate->candidate_number)
+                ->value('candidate_name');
+            $candidate->candidate_name = $candidate_name;
+        }
+
+        // Check if top 4 finalists have already been submitted
+        $isSubmitted = FinalistCandidates::count() >= 4; // Adjust logic as per your application
+
+        // Pass candidate data and submission status to the view
+        return view('usermanage.final_dash', compact('topCandidates', 'isSubmitted'));
+    } catch (\Exception $e) {
+        return back()->withError('Error fetching data: ' . $e->getMessage());
+    }
+}
+
 
         public function dashboardMain()
         {

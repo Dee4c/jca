@@ -60,9 +60,9 @@
         }
     
         .sidebar .logo-details .logo_name {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 600;
+            color: gold;
+            font-size:40px;
+            font-weight: 700;
             margin-left: 40px;
             opacity: 1;
             transition: all 0.5s ease;
@@ -380,6 +380,13 @@
         </div>
         <ul class="nav-list">
             <li>
+                <a href="{{route('usermanage.dashboardMain')}}">
+                    <i class='bx bx-user'></i>
+                    <span class="links_name">Dashboard</span>
+                </a>
+                <span class="tooltip">Dashboard</span>
+            </li>
+            <li>
                 <a href="{{route('usermanage.dashboard')}}">
                     <i class='bx bx-user'></i>
                     <span class="links_name">User Management</span>
@@ -428,17 +435,32 @@
     </div>
 <div class="content">
     <div class="container">
-        @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @elseif (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+        @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         @endif
-
-        <h1 class="title-id">Semi-Finals Table</h1>
+        
+        @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+        <h1 class="title-id">Semi-Finals Overall Rank</h1>
          <!-- Print button container -->
          <div class="print-btn-container">
             <button class="print-btn" onclick="window.print()">Print Table</button>
         </div>
+
+        <form id="semiFinalistsForm" method="POST" action="{{ route('insertFinalists') }}">
+            @csrf
+            <input type="hidden" name="topCandidates" id="topCandidates">
 
         <!-- Table to display semi-finalists -->
         <table class="table table-bordered">
@@ -458,7 +480,7 @@
                     <td>{{ $candidate->overall_rank }}</td>
                     <td>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="candidate[]" value="{{ $candidate->candidate_number }}" id="candidate_{{ $candidate->candidate_number }}">
+                            <input class="form-check-input" type="checkbox" name="candidate[]" value="{{ $candidate->candidate_number }}" id="candidate_{{ $candidate->candidate_number }}" {{ $isSubmitted ? 'disabled' : '' }}>
                             <input type="hidden" name="overallRank[]" value="{{ $candidate->overall_rank }}">
                             <label class="form-check-label" for="candidate_{{ $candidate->candidate_number }}">Select</label>
                         </div>

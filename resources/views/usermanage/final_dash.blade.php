@@ -60,9 +60,9 @@
         }
     
         .sidebar .logo-details .logo_name {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 600;
+            color: gold;
+            font-size:40px;
+            font-weight: 700;
             margin-left: 40px;
             opacity: 1;
             transition: all 0.5s ease;
@@ -236,7 +236,7 @@
             border-radius: 0px;
             transition: all 0.5s ease;
         }
-    
+       
         .home-section {
             position: relative;
             background: #E4E9F7;
@@ -304,6 +304,7 @@
             color: yellow;
             border-bottom: solid 1px rgba(255, 255, 255, 0.1);
         }
+       
     
         .title-id {
             color: white;
@@ -435,13 +436,24 @@
 
 <div class="content">
     <div class="container">
-        @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @elseif (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+        @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         @endif
-
-        <h1 class="title-id">Finals Table</h1>
+        
+        @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+        <h1 class="title-id">Finals Overall Rank</h1>
          <!-- Print button container -->
          <div class="print-btn-container">
             <button class="print-btn" onclick="window.print()">Print Table</button>
@@ -449,7 +461,7 @@
 
         <!-- Table to display finalists -->
         <table class="table table-bordered">
-            <thead>
+            <thead class="thead">
                 <tr>
                     <th>Candidate Number</th>
                     <th>Total Rank</th>
@@ -466,8 +478,28 @@
                 @endforeach
             </tbody>
         </table>
+
+        <!-- Additional table to display Candidate Number and Name -->
+        <h1 class="title-id">Candidates Table</h1>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Candidate Number</th>
+                    <th>Candidate Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($topCandidates as $candidate)
+                <tr>
+                    <td>{{ $candidate->candidate_number }}</td>
+                    <td>{{ $candidate->candidate_name }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 </div>
+
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

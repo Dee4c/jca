@@ -59,13 +59,13 @@
     }
 
     .sidebar .logo-details .logo_name {
-        color: #fff;
-        font-size: 20px;
-        font-weight: 600;
-        margin-left: 40px;
-        opacity: 1;
-        transition: all 0.5s ease;
-    }
+            color: gold;
+            font-size:40px;
+            font-weight: 700;
+            margin-left: 40px;
+            opacity: 1;
+            transition: all 0.5s ease;
+        }
 
     .sidebar .logo-details #btn {
         position: absolute;
@@ -309,6 +309,17 @@
     h2 {
         color:white;
     }
+    .final {
+        text-align: center;
+        font-size:60px;
+    }
+
+    .name_job {
+        color:white;
+        margin-left: 1000px;
+        font-size: 20px;
+        font-weight: bold;
+    }
    
 </style>
 </head>
@@ -373,9 +384,29 @@
 
     <div class="content">
         <div class="container">
-            <h1 class="title-id">FINALS TABLE</h1>
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+            
+            @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+            <div class="name_job">
+                <div class="name">Welcome Judge, {{ Session::get('userName') }}</div> <!-- Display user's name from session -->
+            </div>
+            <h1 class="title-id">FINALS ROUND</h1>
             <br>
-            <h2>Finals</h2>
+            <h2 class="final">Finals Score Sheet</h2>
             <br>
             <!-- Finals Form -->
             <form id="final_form" action="{{ route('final-scores.store') }}" method="POST">
