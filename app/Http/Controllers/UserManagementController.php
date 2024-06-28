@@ -15,7 +15,10 @@ use App\Models\FinalScore;
 use App\Models\FinalistCandidates;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Artisan;
+use Database\Seeders\AdminUserSeeder;
 use Illuminate\Support\Facades\DB;
+
 
 class UserManagementController extends Controller
 {
@@ -25,7 +28,7 @@ class UserManagementController extends Controller
         return view('usermanage.add_judge', compact('uniqueCode'));
     }
 
-    private function generateUniqueCode($length = 12)
+    private function generateUniqueCode($length = 6)
     {
         return Str::random($length);
     }
@@ -950,4 +953,24 @@ class UserManagementController extends Controller
                 'candidatesJoinedPerYear' => $counts, // Pass counts array to the view
             ]);
         }
+
+        public function resetData(Request $request)
+    {
+        try {
+            // Run migration refresh command
+            Artisan::call('migrate:fresh');
+
+            // Seed the database using the UserAdminSeeder
+            $seeder = new AdminUserSeeder();
+            $seeder->run();
+
+            // Optionally, clear cached data if necessary
+            Artisan::call('cache:clear');
+
+            return response()->json(['message' => 'Database reset successful'], 200);
+        } catch (\Exception $e) {
+            // Handle any exceptions that occur during the reset process
+            return response()->json(['error' => 'Database reset failed: ' . $e->getMessage()], 500);
+        }
+    }
 }

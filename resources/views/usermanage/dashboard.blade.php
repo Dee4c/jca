@@ -324,7 +324,7 @@
         }
 
         .add-judge-btn {
-            margin-left: 500px;
+            margin-left: 10px;
             margin-bottom: 20px; /* Adjusted margin */
         }
 
@@ -340,7 +340,19 @@
         .btn.btn-danger:hover {
             background-color: red;
         }
-        
+        .table-bordered td {
+            border-collapse: collapse;
+            width: 100%;
+            background: rgb(234,233,130);
+            background: radial-gradient(circle, rgba(234,233,130,0.8650562275691527) 100%, rgba(176,183,31,0.4785016057204131) 100%);/* Set the background color to yellow */
+        }
+        .table-bordered th {
+            background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(176,183,31,1) 0%); /* Set the background color of th elements in thead to blue */
+            color: white; /* Set text color to white for better contrast */
+        }
+        .table-bordered{
+            color:black;
+        }
     </style>
     
 </head>
@@ -392,12 +404,6 @@
                 <span class="tooltip">Finals</span>
             </li>
             <li class="profile">
-                <div class="profile-details">
-                    <img src="profile.jpg" alt="profileImg">
-                    <div class="name_job">
-                        <div class="name">Admin</div>
-                    </div>
-                </div>
                 <a href="{{ route('logout') }}" class="logout-link">
                     <i class='bx bx-log-out' id="log_out"></i>
                 </a>

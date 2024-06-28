@@ -320,6 +320,13 @@
         font-size: 20px;
         font-weight: bold;
     }
+    .table-bordered th{
+            background: rgb(213,225,133);
+            background: linear-gradient(90deg, rgba(213,225,133,0.6437677121629901) 100%, rgba(182,246,233,0) 100%);
+        }
+        .table-bordered td{
+            background-color:#8B8000;
+        }
    
 </style>
 </head>
@@ -402,9 +409,8 @@
             </div>
             @endif
             <div class="name_job">
-                <div class="name">Welcome Judge, {{ Session::get('userName') }}</div> <!-- Display user's name from session -->
+                <div class="name">Welcome Judge {{ Session::get('userName') }}</div> <!-- Display user's name from session -->
             </div>
-            <h1 class="title-id">FINALS ROUND</h1>
             <br>
             <h2 class="final">Finals Score Sheet</h2>
             <br>

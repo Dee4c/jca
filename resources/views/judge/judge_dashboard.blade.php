@@ -329,6 +329,15 @@
         font-weight: bold;
     }
 
+    .table-bordered th{
+        background: rgb(224,243,73);
+        background: linear-gradient(90deg, rgba(224,243,73,0.6437677121629901) 100%, rgba(182,246,233,0) 100%);
+        }
+        .table-bordered td{
+            background: rgb(191,198,158);
+background: radial-gradient(circle, rgba(191,198,158,0.10875370656074934) 0%, rgba(236,235,142,0.8650562275691527) 0%);
+        }
+
 </style>
 </head>
 <body>
@@ -409,9 +418,8 @@
             </div>
             @endif
             <div class="name_job">
-                <div class="name">Welcome Judge, {{ Session::get('userName') }}</div> <!-- Display user's name from session -->
+                <div class="name">Welcome Judge {{ Session::get('userName') }}</div> <!-- Display user's name from session -->
             </div>
-            <h1 class="title-id">PRELIMINARY ROUND</h1>
             <br>
             <h2 class="pre">Pre-Interview Score Sheet</h2>
             <br>

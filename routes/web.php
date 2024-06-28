@@ -37,6 +37,9 @@ Route::middleware(['isLoggedIn'])->group(function () {
 
     //Admin main dashboard
     Route::get('/usermanage/dashboard_main', [UserManagementController::class, 'dashboardMain'])->name('usermanage.dashboardMain');
+    
+    //Reset Data
+    Route::post('/reset/data', [UserManagementController::class, 'resetData'])->name('reset.data');
 
     // Judge Dashboard Routes
     Route::get('/judge/judgeDashboard', [UserManagementController::class, 'judgeDashboard'])->name('judge.judge_dashboard');

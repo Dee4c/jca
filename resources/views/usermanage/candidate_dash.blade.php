@@ -328,7 +328,9 @@
         }
 
         .add-judge-btn {
-            margin-left: 500px;
+            margin-left: 350px;
+            margin-top:36px;
+            
         }
 
         .title-id {
@@ -350,10 +352,19 @@
         }
 
         .input-group {
-            margin-top: 5px;
+            position: absolute;
+            margin-top:50px;
+            top: 50px;
             width: 20%;
         }
-        
+        .table-bordered th{
+            background: rgb(197,196,100);
+            background: radial-gradient(circle, rgba(197,196,100,0.8650562275691527) 100%, rgba(176,183,31,0.4785016057204131) 100%);
+        }
+        .table-bordered td{
+            background: rgb(236,235,142);
+            background: radial-gradient(circle, rgba(236,235,142,0.8650562275691527) 100%, rgba(176,183,31,0.4785016057204131) 100%);
+        }
     </style>
 </head>
 <body>
@@ -404,12 +415,6 @@
                 <span class="tooltip">Finals</span>
             </li>
             <li class="profile">
-                <div class="profile-details">
-                    <img src="profile.jpg" alt="profileImg">
-                    <div class="name_job">
-                        <div class="name">Admin</div>
-                    </div>
-                </div>
                 <a href="{{ route('logout') }}" class="logout-link">
                     <i class='bx bx-log-out' id="log_out"></i>
                 </a>

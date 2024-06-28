@@ -309,6 +309,7 @@
         .title-id {
             color: white;
             margin: auto;
+            text-align: center;
         }
 
         .form-select {
@@ -371,6 +372,14 @@
                 display: none; /* Hide print button when printing */
             }
         }
+        .table-bordered th{
+            background: rgb(191,198,158);
+            background: radial-gradient(circle, rgba(191,198,158,0.10875370656074934) 0%, rgba(94,241,75,0.8650562275691527) 0%);
+        }
+        .table-bordered td{
+            background: rgb(191,198,158);
+background: radial-gradient(circle, rgba(191,198,158,0.10875370656074934) 0%, rgba(236,235,142,0.8650562275691527) 0%);
+        }
     </style>
 </head>
 <body>
@@ -421,12 +430,6 @@
             <span class="tooltip">Finals</span>
         </li>
         <li class="profile">
-            <div class="profile-details">
-                <img src="profile.jpg" alt="profileImg">
-                <div class="name_job">
-                    <div class="name">Admin</div>
-                </div>
-            </div>
             <a href="{{ route('logout') }}" class="logout-link">
                 <i class='bx bx-log-out' id="log_out"></i>
             </a>

@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Main Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Bootstrap JavaScript Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
     <style>
         @import url(https://fonts.googleapis.com/css?family=Roboto:400,500,300,700);
@@ -273,6 +280,12 @@
 
         .card {
             margin-top: 7px;
+            background: rgb(234,233,130);
+            background: radial-gradient(circle, rgba(234,233,130,0.8650562275691527) 100%, rgba(176,183,31,0.4785016057204131) 100%);
+        }
+
+        .btn {
+            margin-top: 10px;
         }
     </style>
 
@@ -325,12 +338,6 @@
             <span class="tooltip">Finals</span>
         </li>
         <li class="profile">
-            <div class="profile-details">
-                <img src="profile.jpg" alt="profileImg">
-                <div class="name_job">
-                    <div class="name">Admin</div>
-                </div>
-            </div>
             <a href="{{ route('logout') }}" class="logout-link">
                 <i class='bx bx-log-out' id="log_out"></i>
             </a>
@@ -338,11 +345,15 @@
     </ul>
 </div>
 <div class="container" style="margin-left: 270px;">
+    <form action="{{ route('reset.data') }}" method="POST" id="resetForm">
+        @csrf
+        <button type="button" class="btn btn-danger" id="resetButton">Reset Data</button>
+    </form>
     <h1 class="title-id">Dashboard</h1>
     <div class="row">
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body" style="background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(112,121,9,0.7978293368128502) 0%, rgba(170,244,22,0.9686976841517857) 100%, rgba(0,212,255,1) 100%);">
+                <div class="card-body" style="background-color: #8B8000;">
                     <h5 class="card-title">Total Judges</h5>
                     <p class="card-text">{{ $judgesCount }}</p>
                 </div>
@@ -350,7 +361,7 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body"style="background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(121,79,9,0.07794138163077735) 0%, rgba(0,212,255,1) 100%);">
+                <div class="card-body" style="background-color: #C2B280;">
                     <h5 class="card-title">Preliminary Judges</h5>
                     <p class="card-text">{{ $preliminaryJudgesCount }}</p>
                 </div>
@@ -358,7 +369,7 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body"style="background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(112,121,9,0.7978293368128502) 0%, rgba(153,174,163,0.25721309031425066) 100%, rgba(0,212,255,1) 100%);">
+                <div class="card-body" style="background-color: #C4B454;">
                     <h5 class="card-title">Semi-Final Judges</h5>
                     <p class="card-text">{{ $semiFinalJudgesCount }}</p>
                 </div>
@@ -366,7 +377,7 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body"style="background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(90,120,14,0.3692579082414216) 0%, rgba(0,212,255,1) 100%);">
+                <div class="card-body" style="background-color: #FFDEAD;">
                     <h5 class="card-title">Final Judges</h5>
                     <p class="card-text">{{ $finalJudgesCount }}</p>
                 </div>
@@ -374,28 +385,51 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-body"style="background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);">
+                <div class="card-body" style="background-color: #F8DE7E;">
                     <h5 class="card-title">Total Candidates</h5>
                     <p class="card-text">{{ $candidatesCount }}</p>
                 </div>
             </div>
         </div>
-       <!-- Chart for candidates joined per year -->
-       <div class="col-md-12 mt-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Candidates Joined per Year</h5>
-                <div style="height: 400px; width: 100%;">
-                    <canvas id="candidatesJoinedChart"></canvas>
+        <!-- Chart for candidates joined per year -->
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Candidates Per Year</h5>
+                    <div style="height: 400px; width: 100%;">
+                        <canvas id="candidatesJoinedChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Confirm Reset</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to reset the data? Type <strong>Delete Data</strong> below to confirm.
+                <input type="text" class="form-control mt-2" id="confirmationInput" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmReset">Reset Data</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Include Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Bootstrap JavaScript (including Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 // Assuming you have passed data from the controller to the Blade view
@@ -433,6 +467,32 @@ var candidatesChart = new Chart(ctx, {
             }
         }
     }
+});
+
+// jQuery document ready function to handle events
+$(document).ready(function() {
+    // When resetButton is clicked, show the confirmation modal
+    $('#resetButton').click(function() {
+        $('#confirmModal').modal('show');
+    });
+
+    // When confirmReset button in modal is clicked
+    $('#confirmReset').click(function() {
+        // Get the value entered in the confirmation input
+        var confirmationText = $('#confirmationInput').val().trim();
+        
+        // Check if the confirmation text matches "Delete Data"
+        if (confirmationText.toLowerCase() === 'delete data') {
+            // If matched, submit the form
+            $('#resetForm').submit();
+        } else {
+            // If not matched, you can alert or handle as needed
+            alert('Please type "Delete Data" to confirm the reset.');
+        }
+        
+        // Hide the modal
+        $('#confirmModal').modal('hide');
+    });
 });
 </script>
 
