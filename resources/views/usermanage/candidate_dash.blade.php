@@ -461,7 +461,7 @@
                 @csrf
                 @method('DELETE')
                 <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllCandidatesModal">
-                    Delete All Candidates
+                    Clear all Canditates Data
                 </button>
             </form>
         </div>
@@ -594,11 +594,11 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="deleteAllCandidatesModalLabel">Delete All Candidates</h5>
+                        <h5 class="modal-title" id="deleteAllCandidatesModalLabel">Clear Candidates Data</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        Are you sure you want to delete all candidates?
+                        Are you sure you want to delete all candidates data?
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

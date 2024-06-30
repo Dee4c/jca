@@ -974,11 +974,27 @@ class UserManagementController extends Controller
 
     public function deleteAllCandidates()
     {
-        // Delete all candidates
-        Candidate::truncate();
+        try {
+            // Disable foreign key checks
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        // Redirect back with a status message
-        return redirect()->back()->with('success', 'Candidate deleted successfully');
+            // Clear Top 8
+            TopCandidates::truncate();
+
+            // Clear Top 4
+            FinalistCandidates::truncate();
+
+            // Truncate the candidates table
+            Candidate::truncate();
+
+            // Re-enable foreign key checks
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+            return redirect()->back()->with('success', 'Candidates deleted successfully');
+        } catch (\Exception $e) {
+            // Handle any exceptions that occur during the reset process
+            return response()->json(['error' => 'Database reset failed: ' . $e->getMessage()], 500);
+        }
     }
 
     public function deletePreliminaryScores()

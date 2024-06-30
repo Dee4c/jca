@@ -523,7 +523,7 @@ background: radial-gradient(circle, rgba(191,198,158,0.10875370656074934) 0%, rg
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" action="{{ route('usermanage.deleteSemiFinalScores') }}">
+                <form method="POST" action="{{ route('usermanage.deleteFinalScores') }}">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Delete All</button>
