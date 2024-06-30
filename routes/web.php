@@ -56,4 +56,12 @@ Route::middleware(['isLoggedIn'])->group(function () {
     Route::get('/pre-interview-scores', [UserManagementController::class, 'getPreInterviewScores']);
     Route::post('/semi-final-scores', [UserManagementController::class, 'storeSemiFinalScore'])->name('semi-final-scores.store');
     Route::post('/final-scores', [UserManagementController::class, 'storeFinalScore'])->name('final-scores.store');
+
+    //Delete Candidates
+    Route::delete('/usermanage/delete-all', [UserManagementController::class, 'deleteAllCandidates'])->name('usermanage.deleteAllCandidates');
+
+    //Delete Scores
+    Route::delete('/usermanage/delete-preliminary-scores', [UserManagementController::class, 'deletePreliminaryScores'])->name('usermanage.deletePreliminaryScores');
+    Route::delete('/usermanage/delete-semi-final-scores', [UserManagementController::class, 'deleteSemiFinalScores'])->name('usermanage.deleteSemiFinalScores');
+    Route::delete('/usermanage/delete-final-scores', [UserManagementController::class, 'deleteFinalScores'])->name('usermanage.deleteFinalScores');
 });

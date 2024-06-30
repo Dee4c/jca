@@ -462,6 +462,13 @@ background: radial-gradient(circle, rgba(191,198,158,0.10875370656074934) 0%, rg
             <button class="print-btn" onclick="window.print()">Print Table</button>
         </div>
 
+        <form method="POST" action="{{ route('usermanage.deleteFinalScores') }}" class="mt-3">
+            @csrf
+            @method('DELETE')
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">Delete All Final Scores</button>
+        </form>
+        <br>
+
         <!-- Table to display finalists -->
         <table class="table table-bordered">
             <thead class="thead">
@@ -503,6 +510,28 @@ background: radial-gradient(circle, rgba(191,198,158,0.10875370656074934) 0%, rg
     </div>
 </div>
 
+<!-- Modal HTML -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete all Final scores? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ route('usermanage.deleteSemiFinalScores') }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Delete All</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

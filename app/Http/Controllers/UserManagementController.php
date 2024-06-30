@@ -223,17 +223,17 @@ class UserManagementController extends Controller
 
             // Fetch detailed scores with judges' names (if needed)
             $preInterviewScores = DB::table('pre_interview_scores')
-                ->join('candidates', 'pre_interview_scores.candidate_number', '=', 'candidates.candidateNumber')
+                ->join('candidates', DB::raw('CAST(pre_interview_scores.candidate_number AS TEXT)'), '=', DB::raw('CAST("candidates"."candidateNumber" AS TEXT)'))
                 ->select('candidates.candidateNumber', 'candidates.candidateName', 'pre_interview_scores.judge_name', 'pre_interview_scores.rank')
                 ->get();
 
             $swimSuitScores = DB::table('swim_suit_scores')
-                ->join('candidates', 'swim_suit_scores.candidate_number', '=', 'candidates.candidateNumber')
+                ->join('candidates', DB::raw('CAST(swim_suit_scores.candidate_number AS TEXT)'), '=', DB::raw('CAST("candidates"."candidateNumber" AS TEXT)'))
                 ->select('candidates.candidateNumber', 'candidates.candidateName', 'swim_suit_scores.judge_name', 'swim_suit_scores.rank')
                 ->get();
 
             $gownScores = DB::table('gown_scores')
-                ->join('candidates', 'gown_scores.candidate_number', '=', 'candidates.candidateNumber')
+                ->join('candidates', DB::raw('CAST(gown_scores.candidate_number AS TEXT)'), '=', DB::raw('CAST("candidates"."candidateNumber" AS TEXT)'))
                 ->select('candidates.candidateNumber', 'candidates.candidateName', 'gown_scores.judge_name', 'gown_scores.rank')
                 ->get();
 
@@ -243,6 +243,7 @@ class UserManagementController extends Controller
             // Pass data to the view
             return view('usermanage.preliminary_dash', compact('candidates', 'preInterviewScores', 'swimSuitScores', 'gownScores', 'isSubmitted'));
         } catch (\Exception $e) {
+            \Log::error('Error fetching data in preliminaryDash: ' . $e->getMessage());
             return back()->withError('Error fetching data: ' . $e->getMessage());
         }
     }
@@ -918,42 +919,40 @@ class UserManagementController extends Controller
     }
 }
 
+    public function dashboardMain()
+    {
+        // Counting judges in different roles
+        $judgesCount = User::where('role', 'like', '%judge%')->count();
+        $preliminaryJudgesCount = User::where('role', 'judge_prelim')->count();
+        $semiFinalJudgesCount = User::where('role', 'judge_semi')->count();
+        $finalJudgesCount = User::where('role', 'judge_final')->count();
 
-        public function dashboardMain()
-        {
-            // Counting judges in different roles
-            $judgesCount = User::where('role', 'like', '%judge%')->count();
-            $preliminaryJudgesCount = User::where('role', 'judge_prelim')->count();
-            $semiFinalJudgesCount = User::where('role', 'judge_semi')->count();
-            $finalJudgesCount = User::where('role', 'judge_final')->count();
+        // Counting all candidates
+        $candidatesCount = Candidate::count();
 
-            // Counting all candidates
-            $candidatesCount = Candidate::count();
+        // Fetching data for candidates joined per year
+        $candidatesJoinedPerYear = Candidate::select(DB::raw('COUNT(*) as count'), DB::raw('EXTRACT(YEAR FROM created_at) as year'))
+            ->groupBy(DB::raw('EXTRACT(YEAR FROM created_at)'))
+            ->get();
 
-            // Fetching data for candidates joined per year
-            $candidatesJoinedPerYear = Candidate::select(DB::raw('COUNT(*) as count'), DB::raw('YEAR(created_at) as year'))
-                ->groupBy(DB::raw('YEAR(created_at)'))
-                ->get();
-
-            // Assuming you have $candidatesJoinedPerYear as a collection of counts per year
-            $years = [];
-            $counts = [];
-            foreach ($candidatesJoinedPerYear as $data) {
-                $years[] = $data->year;
-                $counts[] = $data->count;
-            }
-
-            return view('usermanage.dashboard_main', [
-                'judgesCount' => $judgesCount,
-                'preliminaryJudgesCount' => $preliminaryJudgesCount,
-                'semiFinalJudgesCount' => $semiFinalJudgesCount,
-                'finalJudgesCount' => $finalJudgesCount,
-                'candidatesCount' => $candidatesCount,
-                'years' => $years, // Pass years array to the view
-                'candidatesJoinedPerYear' => $counts, // Pass counts array to the view
-            ]);
+        // Assuming you have $candidatesJoinedPerYear as a collection of counts per year
+        $years = [];
+        $counts = [];
+        foreach ($candidatesJoinedPerYear as $data) {
+            $years[] = $data->year;
+            $counts[] = $data->count;
         }
 
+        return view('usermanage.dashboard_main', [
+            'judgesCount' => $judgesCount,
+            'preliminaryJudgesCount' => $preliminaryJudgesCount,
+            'semiFinalJudgesCount' => $semiFinalJudgesCount,
+            'finalJudgesCount' => $finalJudgesCount,
+            'candidatesCount' => $candidatesCount,
+            'years' => $years, // Pass years array to the view
+            'candidatesJoinedPerYear' => $counts, // Pass counts array to the view
+        ]);
+    }
         public function resetData(Request $request)
     {
         try {
@@ -972,5 +971,43 @@ class UserManagementController extends Controller
             // Handle any exceptions that occur during the reset process
             return response()->json(['error' => 'Database reset failed: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function deleteAllCandidates()
+    {
+        // Delete all candidates
+        Candidate::truncate();
+
+        // Redirect back with a status message
+        return redirect()->back()->with('success', 'Candidate deleted successfully');
+    }
+
+    public function deletePreliminaryScores()
+    {
+        // Delete Preliminary Scores
+        PreInterviewScore::truncate();
+        SwimSuitScore::truncate();
+        GownScore::truncate();
+
+        // Redirect back with a status message
+        return redirect()->back()->with('success', 'All Scores have been Deleted!');   
+    }
+
+    public function deleteSemiFinalScores()
+    {
+        // Assuming you're using Eloquent model to delete records
+        SemiFinalScore::truncate();
+    
+        // Redirect back with a status message
+        return redirect()->back()->with('success', 'All Scores have been Deleted!');
+    }
+    
+    public function deleteFinalScores()
+    {
+        //Delete Semi Final Scores
+        FinalScore::truncate();
+
+        // Redirect back with a status message
+        return redirect()->back()->with('success', 'All Scores have been Deleted!'); 
     }
 }

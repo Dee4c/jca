@@ -437,96 +437,121 @@ background: radial-gradient(circle, rgba(191,198,158,0.10875370656074934) 0%, rg
             </li>
         </ul>
     </div>
-<div class="content">
-    <div class="container">
-        @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        @endif
-        
-        @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-            <ul>
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        @endif
-        <h1 class="title-id">Semi-Finals Overall Rank</h1>
-         <!-- Print button container -->
-         <div class="print-btn-container">
-            <button class="print-btn" onclick="window.print()">Print Table</button>
-        </div>
+    <div class="content">
+        <div class="container">
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
 
-        <form id="semiFinalistsForm" method="POST" action="{{ route('insertFinalists') }}">
-            @csrf
-            <input type="hidden" name="topCandidates" id="topCandidates">
+            @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
 
-        <!-- Table to display semi-finalists -->
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Candidate Number</th>
-                    <th>Total Rank</th>
-                    <th>Overall Ranking</th>
-                    <th>Select Top 4 Candidates</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($topCandidates as $candidate)
-                <tr>
-                    <td>{{ $candidate->candidate_number }}</td>
-                    <td>{{ $candidate->total_rank }}</td>
-                    <td>{{ $candidate->overall_rank }}</td>
-                    <td>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="candidate[]" value="{{ $candidate->candidate_number }}" id="candidate_{{ $candidate->candidate_number }}" {{ $isSubmitted ? 'disabled' : '' }}>
-                            <input type="hidden" name="overallRank[]" value="{{ $candidate->overall_rank }}">
-                            <label class="form-check-label" for="candidate_{{ $candidate->candidate_number }}">Select</label>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+            <h1 class="title-id">Semi-Finals Overall Rank</h1>
+            
+            <div class="print-btn-container">
+                <button class="print-btn" onclick="window.print()">Print Table</button>
+            </div>
 
-        <!-- Submit button -->
-        @if (!$isSubmitted)
-            <button type="submit" class="btn btn-primary" id="submitBtn">Submit Finalists</button>
-        @else
-            <button type="button" class="btn btn-primary" id="submitBtn" disabled>Submit Finalists</button>
-        @endif
+            <button type="button" class="btn btn-danger mt-3" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">Delete All Semi-Final Scores</button>
+            <br><br>
+            <form id="semiFinalistsForm" method="POST" action="{{ route('insertFinalists') }}">
+                @csrf
+                <input type="hidden" name="topCandidates" id="topCandidates">
+                <!-- Table to display semi-finalists -->
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Candidate Number</th>
+                            <th>Total Rank</th>
+                            <th>Overall Ranking</th>
+                            <th>Select Top 4 Candidates</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($topCandidates as $candidate)
+                        <tr>
+                            <td>{{ $candidate->candidate_number }}</td>
+                            <td>{{ $candidate->total_rank }}</td>
+                            <td>{{ $candidate->overall_rank }}</td>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="candidate[]" value="{{ $candidate->candidate_number }}" id="candidate_{{ $candidate->candidate_number }}" {{ $isSubmitted ? 'disabled' : '' }}>
+                                    <input type="hidden" name="overallRank[]" value="{{ $candidate->overall_rank }}">
+                                    <label class="form-check-label" for="candidate_{{ $candidate->candidate_number }}">Select</label>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <!-- Submit button -->
+                @if (!$isSubmitted)
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Submit Finalists</button>
+                @else
+                    <button type="button" class="btn btn-primary" id="submitBtn" disabled>Submit Finalists</button>
+                @endif
+            </form>
+        </div>
     </div>
-</div>
 
-<!-- JavaScript to handle selected candidates -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        const submitBtn = document.getElementById('submitBtn');
+    <!-- Modal HTML -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete all Semi-Final scores? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{{ route('usermanage.deleteSemiFinalScores') }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete All</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        checkboxes.forEach((checkbox, index) => {
-            checkbox.addEventListener('change', function() {
-                const hiddenInput = checkbox.parentNode.querySelector('input[type="hidden"]');
-                if (this.checked) {
-                    hiddenInput.value = index + 1; // Assign overall rank based on order of selection
-                } else {
-                    hiddenInput.value = '';
-                }
-                // Enable submit button if at least one checkbox is checked
-                submitBtn.disabled = document.querySelectorAll('input[type="checkbox"]:checked').length === 0;
+    <!-- JavaScript to handle selected candidates -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const submitBtn = document.getElementById('submitBtn');
+
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.addEventListener('change', function() {
+                    const hiddenInput = checkbox.parentNode.querySelector('input[type="hidden"]');
+                    if (this.checked) {
+                        hiddenInput.value = index + 1; // Assign overall rank based on order of selection
+                    } else {
+                        hiddenInput.value = '';
+                    }
+                    // Enable submit button if at least one checkbox is checked
+                    submitBtn.disabled = document.querySelectorAll('input[type="checkbox"]:checked').length === 0;
+                });
             });
+
+            // Initially disable submit button if no checkboxes are checked
+            submitBtn.disabled = true;
         });
-
-        // Initially disable submit button if no checkboxes are checked
-        submitBtn.disabled = true;
-    });
-</script>
-
+    </script>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </html> 

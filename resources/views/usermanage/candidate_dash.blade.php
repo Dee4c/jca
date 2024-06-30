@@ -328,7 +328,7 @@
         }
 
         .add-judge-btn {
-            margin-left: 350px;
+            margin-left: 390px;
             margin-top:36px;
             
         }
@@ -421,7 +421,7 @@
             </li>
         </ul>
     </div>
-<div class="content">
+    <div class="content">
     <div class="container">
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
@@ -450,199 +450,232 @@
             </div>
         </form>
 
-       <!-- Add Candidate Button -->
-<div class="add-judge-btn">
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCandidateModal">Add Candidate</button>
-</div>
+        <!-- Add Candidate Button -->
+        <div class="add-judge-btn">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCandidateModal">Add Candidate</button>
+        </div>
 
-<!-- Candidates Table -->
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Candidate Image</th>
-            <th>Candidate Number</th>
-            <th>Name</th>
-            <th>Age</th>
-            <th>Address</th>
-            <th>Waist<br> (inch)</th>
-            <th>Hips<br> (inch)</th>
-            <th>Chest<br> (inch)</th>
-            <th>Action</th> <!-- Assuming you want to keep the action column -->
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Replace the code below with your user data retrieval and display logic -->
-        <!-- Example loop for displaying candidate data -->
-        @foreach($candidates as $candidate)
-        <tr>
-            <td><a href="#" class="candidate-image-link" data-bs-toggle="modal" data-bs-target="#imageModal"><img src="{{ asset($candidate->candidateImage) }}" alt="Candidate Image" class="candidate-image"></a></td>
-            <td>{{ $candidate->candidateNumber }}</td>
-            <td>{{ $candidate->candidateName }}</td>
-            <td>{{ $candidate->age }}</td>
-            <td>{{ $candidate->candidateAddress }}</td>
-            <td>{{ $candidate->waist }}</td>
-            <td>{{ $candidate->hips }}</td>
-            <td>{{ $candidate->chest }}</td>
-            <td>
-                <!-- Edit Button -->
-                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#editModal{{ $candidate->id }}">Edit</button>
-                <!-- Delete Button -->
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $candidate->id }}">Delete</button>
-            </td>
-        </tr>
-        <!-- Edit Candidate Modal -->
-        <div class="modal fade" id="editModal{{ $candidate->id }}" tabindex="-1" aria-labelledby="editModalLabel{{ $candidate->id }}" aria-hidden="true">
+       <!-- Delete All Candidates Button -->
+        <div class="mt-3 mb-3">
+            <form id="deleteAllCandidatesForm" action="{{ route('usermanage.deleteAllCandidates') }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllCandidatesModal">
+                    Delete All Candidates
+                </button>
+            </form>
+        </div>
+
+        <!-- Candidates Table -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Candidate Image</th>
+                    <th>Candidate Number</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Address</th>
+                    <th>Waist (inch)</th>
+                    <th>Hips (inch)</th>
+                    <th>Chest (inch)</th>
+                    <th>Action</th> <!-- Assuming you want to keep the action column -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Replace the code below with your user data retrieval and display logic -->
+                <!-- Example loop for displaying candidate data -->
+                @foreach($candidates as $candidate)
+                <tr>
+                    <td><a href="#" class="candidate-image-link" data-bs-toggle="modal" data-bs-target="#imageModal"><img src="{{ asset($candidate->candidateImage) }}" alt="Candidate Image" class="candidate-image"></a></td>
+                    <td>{{ $candidate->candidateNumber }}</td>
+                    <td>{{ $candidate->candidateName }}</td>
+                    <td>{{ $candidate->age }}</td>
+                    <td>{{ $candidate->candidateAddress }}</td>
+                    <td>{{ $candidate->waist }}</td>
+                    <td>{{ $candidate->hips }}</td>
+                    <td>{{ $candidate->chest }}</td>
+                    <td>
+                        <!-- Edit Button -->
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#editModal{{ $candidate->id }}">Edit</button>
+                        <!-- Delete Button -->
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $candidate->id }}">Delete</button>
+                    </td>
+                </tr>
+                <!-- Edit Candidate Modal -->
+                <div class="modal fade" id="editModal{{ $candidate->id }}" tabindex="-1" aria-labelledby="editModalLabel{{ $candidate->id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel{{ $candidate->id }}">Edit Candidate</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Candidate Edit Form -->
+                                <form id="editCandidateForm{{ $candidate->id }}" method="POST" action="{{ route('candidate.update', $candidate->id) }}" enctype="multipart/form-data">
+                                    @csrf
+                                    @method('PUT')
+                                    <!-- Candidate Number -->
+                                    <div class="form-group">
+                                        <label for="candidateNumber">Candidate Number</label>
+                                        <input type="text" class="form-control" name="candidateNumber" value="{{ $candidate->candidateNumber }}" required>
+                                    </div>
+                                    <!-- Name -->
+                                    <div class="form-group">
+                                        <label for="candidateName">Name</label>
+                                        <input type="text" class="form-control" name="candidateName" value="{{ $candidate->candidateName }}" required>
+                                    </div>
+                                    <!-- Age -->
+                                    <div class="form-group">
+                                        <label for="age">Age</label>
+                                        <input type="number" class="form-control" name="age" value="{{ $candidate->age }}" required>
+                                    </div>
+                                    <!-- Address -->
+                                    <div class="form-group">
+                                        <label for="candidateAddress">Address</label>
+                                        <input type="text" class="form-control" name="candidateAddress" value="{{ $candidate->candidateAddress }}" required>
+                                    </div>
+                                    <!-- Waist -->
+                                    <div class="form-group">
+                                        <label for="waist">Waist</label>
+                                        <input type="number" class="form-control" name="waist" value="{{ $candidate->waist }}" required>
+                                    </div>
+                                    <!-- Hips -->
+                                    <div class="form-group">
+                                        <label for="hips">Hips</label>
+                                        <input type="number" class="form-control" name="hips" value="{{ $candidate->hips }}" required>
+                                    </div>
+                                    <!-- Chest -->
+                                    <div class="form-group">
+                                        <label for="chest">Chest</label>
+                                        <input type="number" class="form-control" name="chest" value="{{ $candidate->chest }}" required>
+                                    </div>
+                                    <!-- Image Upload -->
+                                    <div class="form-group">
+                                        <label for="candidateImage">Upload Image</label>
+                                        <input type="file" class="form-control" name="candidateImage" accept="image/*">
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" form="editCandidateForm{{ $candidate->id }}" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Delete Account Modal for this Candidate -->
+                <div class="modal fade" id="deleteModal{{ $candidate->id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">Delete Account</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete the candidate {{ $candidate->candidateName }}?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <form action="{{ route('candidate.delete', $candidate->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </tbody>
+        </table>
+
+        <!-- Delete All Candidates Modal -->
+        <div class="modal fade" id="deleteAllCandidatesModal" tabindex="-1" aria-labelledby="deleteAllCandidatesModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="editModalLabel{{ $candidate->id }}">Edit Candidate</h5>
+                        <h5 class="modal-title" id="deleteAllCandidatesModalLabel">Delete All Candidates</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Candidate Edit Form -->
-                        <form id="editCandidateForm{{ $candidate->id }}" method="POST" action="{{ route('candidate.update', $candidate->id) }}" enctype="multipart/form-data">
+                        Are you sure you want to delete all candidates?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form id="deleteAllCandidatesConfirmForm" action="{{ route('usermanage.deleteAllCandidates') }}" method="POST">
                             @csrf
-                            @method('PUT')
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Delete All</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Candidate Modal -->
+        <div class="modal fade" id="addCandidateModal" tabindex="-1" aria-labelledby="addCandidateModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCandidateModalLabel">Add Candidate</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="candidateFormsContainer">
+                        <!-- Candidate Form -->
+                        <form id="addCandidateForm" method="POST" action="{{ route('candidate.store') }}" enctype="multipart/form-data">
+                            @csrf
                             <!-- Candidate Number -->
                             <div class="form-group">
                                 <label for="candidateNumber">Candidate Number</label>
-                                <input type="text" class="form-control" name="candidateNumber" value="{{ $candidate->candidateNumber }}" required>
+                                <input type="text" class="form-control" name="candidateNumber" required>
                             </div>
                             <!-- Name -->
                             <div class="form-group">
                                 <label for="candidateName">Name</label>
-                                <input type="text" class="form-control" name="candidateName" value="{{ $candidate->candidateName }}" required>
+                                <input type="text" class="form-control" name="candidateName" required>
                             </div>
                             <!-- Age -->
                             <div class="form-group">
                                 <label for="age">Age</label>
-                                <input type="number" class="form-control" name="age" value="{{ $candidate->age }}" required>
+                                <input type="number" class="form-control" name="age" required>
                             </div>
                             <!-- Address -->
                             <div class="form-group">
                                 <label for="candidateAddress">Address</label>
-                                <input type="text" class="form-control" name="candidateAddress" value="{{ $candidate->candidateAddress }}" required>
+                                <input type="text" class="form-control" name="candidateAddress" required>
                             </div>
                             <!-- Waist -->
                             <div class="form-group">
                                 <label for="waist">Waist</label>
-                                <input type="number" class="form-control" name="waist" value="{{ $candidate->waist }}" required>
+                                <input type="number" class="form-control" name="waist" required>
                             </div>
                             <!-- Hips -->
                             <div class="form-group">
                                 <label for="hips">Hips</label>
-                                <input type="number" class="form-control" name="hips" value="{{ $candidate->hips }}" required>
+                                <input type="number" class="form-control" name="hips" required>
                             </div>
                             <!-- Chest -->
                             <div class="form-group">
                                 <label for="chest">Chest</label>
-                                <input type="number" class="form-control" name="chest" value="{{ $candidate->chest }}" required>
+                                <input type="number" class="form-control" name="chest" required>
                             </div>
                             <!-- Image Upload -->
                             <div class="form-group">
                                 <label for="candidateImage">Upload Image</label>
-                                <input type="file" class="form-control" name="candidateImage" accept="image/*">
+                                <input type="file" class="form-control" name="candidateImage" accept="image/*" required>
                             </div>
-                        </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" form="editCandidateForm{{ $candidate->id }}" class="btn btn-primary">Save Changes</button>
+                        <button type="submit" class="btn btn-primary">Add Candidate</button>
                     </div>
+                    </form>
                 </div>
             </div>
         </div>
-        <!-- Delete Account Modal for this Candidate -->
-        <div class="modal fade" id="deleteModal{{ $candidate->id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteModalLabel">Delete Account</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Are you sure you want to delete the candidate {{ $candidate->candidateName }}?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <form action="{{ route('candidate.delete', $candidate->id) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endforeach
-    </tbody>
-</table>
 
-<!-- Add Candidate Modal -->
-<div class="modal fade" id="addCandidateModal" tabindex="-1" aria-labelledby="addCandidateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addCandidateModalLabel">Add Candidate</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="candidateFormsContainer">
-                <!-- Candidate Form -->
-                <form id="addCandidateForm" method="POST" action="{{ route('candidate.store') }}" enctype="multipart/form-data">
-                    @csrf
-                    <!-- Candidate Number -->
-                    <div class="form-group">
-                        <label for="candidateNumber">Candidate Number</label>
-                        <input type="text" class="form-control" name="candidateNumber" required>
-                    </div>
-                    <!-- Name -->
-                    <div class="form-group">
-                        <label for="candidateName">Name</label>
-                        <input type="text" class="form-control" name="candidateName" required>
-                    </div>
-                    <!-- Age -->
-                    <div class="form-group">
-                        <label for="age">Age</label>
-                        <input type="number" class="form-control" name="age" required>
-                    </div>
-                    <!-- Address -->
-                    <div class="form-group">
-                        <label for="candidateAddress">Address</label>
-                        <input type="text" class="form-control" name="candidateAddress" required>
-                    </div>
-                    <!-- Waist -->
-                    <div class="form-group">
-                        <label for="waist">Waist</label>
-                        <input type="number" class="form-control" name="waist" required>
-                    </div>
-                    <!-- Hips -->
-                    <div class="form-group">
-                        <label for="hips">Hips</label>
-                        <input type="number" class="form-control" name="hips" required>
-                    </div>
-                    <!-- Chest -->
-                    <div class="form-group">
-                        <label for="chest">Chest</label>
-                        <input type="number" class="form-control" name="chest" required>
-                    </div>
-                    <!-- Image Upload -->
-                    <div class="form-group">
-                        <label for="candidateImage">Upload Image</label>
-                        <input type="file" class="form-control" name="candidateImage" accept="image/*" required>
-                    </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Add Candidate</button>
-            </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-
-         <!-- Image Modal -->
-         <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <!-- Image Modal -->
+        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -661,7 +694,6 @@
     </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
     document.querySelectorAll('.candidate-image-link').forEach(link => {
@@ -673,5 +705,6 @@
         });
     });
 </script>
+
 </body>
 </html>
