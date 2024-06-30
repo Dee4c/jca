@@ -223,17 +223,17 @@ class UserManagementController extends Controller
 
             // Fetch detailed scores with judges' names (if needed)
             $preInterviewScores = DB::table('pre_interview_scores')
-                ->join('candidates', DB::raw('CAST(pre_interview_scores.candidate_number AS TEXT)'), '=', DB::raw('CAST("candidates"."candidateNumber" AS TEXT)'))
+                ->join('candidates', 'pre_interview_scores.candidate_number', '=', 'candidates.candidateNumber')
                 ->select('candidates.candidateNumber', 'candidates.candidateName', 'pre_interview_scores.judge_name', 'pre_interview_scores.rank')
                 ->get();
 
             $swimSuitScores = DB::table('swim_suit_scores')
-                ->join('candidates', DB::raw('CAST(swim_suit_scores.candidate_number AS TEXT)'), '=', DB::raw('CAST("candidates"."candidateNumber" AS TEXT)'))
+                ->join('candidates', 'swim_suit_scores.candidate_number', '=', 'candidates.candidateNumber')
                 ->select('candidates.candidateNumber', 'candidates.candidateName', 'swim_suit_scores.judge_name', 'swim_suit_scores.rank')
                 ->get();
 
             $gownScores = DB::table('gown_scores')
-                ->join('candidates', DB::raw('CAST(gown_scores.candidate_number AS TEXT)'), '=', DB::raw('CAST("candidates"."candidateNumber" AS TEXT)'))
+                ->join('candidates', 'gown_scores.candidate_number', '=', 'candidates.candidateNumber')
                 ->select('candidates.candidateNumber', 'candidates.candidateName', 'gown_scores.judge_name', 'gown_scores.rank')
                 ->get();
 
@@ -243,7 +243,6 @@ class UserManagementController extends Controller
             // Pass data to the view
             return view('usermanage.preliminary_dash', compact('candidates', 'preInterviewScores', 'swimSuitScores', 'gownScores', 'isSubmitted'));
         } catch (\Exception $e) {
-            \Log::error('Error fetching data in preliminaryDash: ' . $e->getMessage());
             return back()->withError('Error fetching data: ' . $e->getMessage());
         }
     }
